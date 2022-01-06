@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5896545336664281064}
   m_Layer: 0
   m_Name: Tree Line
-  m_TagString: Untagged
+  m_TagString: Treeline
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -102,6 +102,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 23564249676201652, guid: c943e37c84756ac4e809c7790d9ba881,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: f29feec3fb113d04c8d984a3180852d4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c943e37c84756ac4e809c7790d9ba881, type: 3}
 --- !u!4 &4279806386682504580 stripped
@@ -177,6 +182,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 23564249676201652, guid: c943e37c84756ac4e809c7790d9ba881,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: f29feec3fb113d04c8d984a3180852d4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c943e37c84756ac4e809c7790d9ba881, type: 3}
 --- !u!4 &4279806386667008699 stripped
@@ -262,6 +272,11 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Branch
       objectReference: {fileID: 0}
+    - target: {fileID: 5398905829444349404, guid: 9e6e2405e87d7044598a91f60fd619ea,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: f29feec3fb113d04c8d984a3180852d4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9e6e2405e87d7044598a91f60fd619ea, type: 3}
 --- !u!4 &7926067262212398291 stripped
@@ -347,6 +362,11 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Branch
       objectReference: {fileID: 0}
+    - target: {fileID: 5398905829444349404, guid: 9e6e2405e87d7044598a91f60fd619ea,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: f29feec3fb113d04c8d984a3180852d4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9e6e2405e87d7044598a91f60fd619ea, type: 3}
 --- !u!4 &4818419960094116887 stripped
@@ -432,6 +452,11 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Branch
       objectReference: {fileID: 0}
+    - target: {fileID: 5398905829444349404, guid: 9e6e2405e87d7044598a91f60fd619ea,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: f29feec3fb113d04c8d984a3180852d4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9e6e2405e87d7044598a91f60fd619ea, type: 3}
 --- !u!4 &5755105160516617630 stripped
