@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
     public GameObject player; //XR Origin (Rig)
+    private PlayerController playerController;
+    private float playerAutomaticMovingSpeed = 0.04f;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -23,35 +24,37 @@ public class GameManager : MonoBehaviour
     private List<GameObject> decorationTrees;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
+        playerController = player.GetComponent<PlayerController>();
+
         //treeline platforms
         treelines = new List<GameObject>();
-        foreach(Transform child in trees.transform) {
+        foreach (Transform child in trees.transform) {
             treelines.Add(child.gameObject);
         }
-        GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
+
+        lastAddedTreeline = GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
 
         //decoration trees
         decorationTrees = new List<GameObject>();
         foreach (Transform child in forest.transform) {
             decorationTrees.Add(child.gameObject);
         }
-        GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
+        lastAddedDecorationTrees = GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
 
 
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
+        playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
 
         //Generate new trees
         if (treelines.Count < treelineDensity) {
             //treeline platforms
-            GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
+            lastAddedTreeline = GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
             //decoration trees
-            GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
+            lastAddedDecorationTrees = GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
         }
 
         //Destroy trees if non visible to player
@@ -64,7 +67,7 @@ public class GameManager : MonoBehaviour
     }
 
 
-    void GenerateTrees(int density, GameObject lastAddedTree, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab) {
+    GameObject GenerateTrees(int density, GameObject lastAddedTree, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab) {
         Vector3 newPos;
 
         for (int i = 0; i < density; i++) {
@@ -73,19 +76,23 @@ public class GameManager : MonoBehaviour
                 lastAddedTree.transform.position.z + distanceBetweenTrees);
 
             lastAddedTree = Instantiate(treePrefab, newPos, treePrefab.transform.rotation);
+            lastAddedTree.name = lastAddedTree.name + " " + (i + 1);
             lastAddedTree.transform.parent = parent.gameObject.transform;
             trees.Add(lastAddedTree);
 
         }
-    
+
+        return lastAddedTree;
+
     }
 
     void DestroyTrees(List<GameObject> treeList) {
         List<GameObject> treelinesToDestroy = new List<GameObject>();
 
+        float offSetToDeleteTrees = 10f;
         //browse all the trees that are behind the player (the list of treelines is already ordered by z ascending)
         foreach (GameObject treeline in treeList) {
-            if(treeline.transform.position.z < player.transform.position.z) {
+            if (treeline.transform.position.z+offSetToDeleteTrees < player.transform.position.z) {
                 treelinesToDestroy.Add(treeline);
             }
             else {

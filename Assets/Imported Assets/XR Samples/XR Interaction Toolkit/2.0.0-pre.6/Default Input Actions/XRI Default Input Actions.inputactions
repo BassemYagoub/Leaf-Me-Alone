@@ -1105,6 +1105,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "GameActions",
+            "id": "24a712ae-abbb-4f13-af24-9cdb42e97f1a",
+            "actions": [
+                {
+                    "name": "MoveLeftOrRight",
+                    "type": "Value",
+                    "id": "36fb5a2a-a122-4945-8bd4-f7c8ee6b07ed",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "509607f5-d4d9-4434-b571-b220d3f30eea",
+                    "path": "<XRController>{LeftHand}/primary2DAxis",
+                    "interactions": "Sector(directions=12,sweepBehavior=1)",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "MoveLeftOrRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
