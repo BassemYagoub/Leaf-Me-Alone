@@ -436,15 +436,13 @@ MonoBehaviour:
   playerAutomaticMovingSpeed: 0.04
   treelinePrefab: {fileID: 6408539921318007122, guid: bce4fb9485523cb4aafb18fed5ae485a,
     type: 3}
-  lastAddedTreeline: {fileID: 929527985}
   trees: {fileID: 150516205}
-  treelineDensity: 4
+  treelineDensity: 10
   decorationTreesPrefab: {fileID: 8466968517173888908, guid: c6d7f0600b168c14eb21f6bcb501a545,
     type: 3}
-  lastAddedDecorationTrees: {fileID: 1948399236}
   forest: {fileID: 879138092}
-  decorationTreesDensity: 4
-  gameOverPanel: {fileID: 1725197699}
+  decorationTreesDensity: 15
+  gameOverPanel: {fileID: 0}
 --- !u!1 &150516205
 GameObject:
   m_ObjectHideFlags: 0
@@ -2796,12 +2794,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 929527983}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &929527985 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6408539921318007122, guid: bce4fb9485523cb4aafb18fed5ae485a,
-    type: 3}
-  m_PrefabInstance: {fileID: 929527983}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1043727231
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4646,12 +4638,6 @@ PrefabInstance:
 --- !u!4 &1948399235 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3439126774445698847, guid: c6d7f0600b168c14eb21f6bcb501a545,
-    type: 3}
-  m_PrefabInstance: {fileID: 1948399234}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1948399236 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8466968517173888908, guid: c6d7f0600b168c14eb21f6bcb501a545,
     type: 3}
   m_PrefabInstance: {fileID: 1948399234}
   m_PrefabAsset: {fileID: 0}
