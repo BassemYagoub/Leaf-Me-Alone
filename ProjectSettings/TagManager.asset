@@ -7,6 +7,9 @@ TagManager:
   - Tree
   - Branch
   - Treeline
+  - Enemy
+  - Shuriken
+  - Obstacle
   layers:
   - Default
   - TransparentFX

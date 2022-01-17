@@ -205,15 +205,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
-                },
-                {
-                    "name": "Throw Shuriken",
-                    "type": "Button",
-                    "id": "be311c94-19c3-4c85-a375-b1318471ebec",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -579,17 +570,6 @@
                     "action": "UI Press Value",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "40a3b925-eb27-41e9-adbc-d41b739cf99e",
-                    "path": "<XRController>{LeftHand}/triggerPressed",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Generic XR Controller",
-                    "action": "Throw Shuriken",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -920,7 +900,7 @@
                 {
                     "name": "",
                     "id": "92bb5b8f-bf48-4dab-af05-50a865773895",
-                    "path": "<XRController>{RightHand}/triggerPressed",
+                    "path": "<XRController>{RightHand}/primaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",
@@ -1118,6 +1098,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "ThrowProjectile",
+                    "type": "Button",
+                    "id": "350163da-fbe6-433c-a86c-cb94d4dddf78",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1129,6 +1118,17 @@
                     "processors": "",
                     "groups": "Generic XR Controller",
                     "action": "MoveLeftOrRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9dae4397-6bd9-4120-ad87-1c005eb2cc28",
+                    "path": "<XRController>{LeftHand}/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "ThrowProjectile",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

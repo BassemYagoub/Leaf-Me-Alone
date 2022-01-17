@@ -41,7 +41,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1757833680566350, guid: a8d0359a40457304797a822fdeb25eab, type: 3}
       propertyPath: m_Name
-      value: Fir Tree 6 (8)
+      value: LeftTree
       objectReference: {fileID: 0}
     - target: {fileID: 4204573324509406, guid: a8d0359a40457304797a822fdeb25eab, type: 3}
       propertyPath: m_RootOrder
@@ -126,7 +126,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1757833680566350, guid: a8d0359a40457304797a822fdeb25eab, type: 3}
       propertyPath: m_Name
-      value: Fir Tree 6 (17)
+      value: RightTree
       objectReference: {fileID: 0}
     - target: {fileID: 4204573324509406, guid: a8d0359a40457304797a822fdeb25eab, type: 3}
       propertyPath: m_RootOrder

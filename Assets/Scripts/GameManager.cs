@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
     public GameObject player; //XR Origin (Rig)
+    public float playerAutomaticMovingSpeed = 0.04f;
     private PlayerController playerController;
-    private float playerAutomaticMovingSpeed = 0.04f;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -22,6 +23,10 @@ public class GameManager : MonoBehaviour {
     public int decorationTreesDensity; //nb of decoration trees to instantiate //4
     private float distanceBetweenDecorationTrees = 3;
     private List<GameObject> decorationTrees;
+
+
+    [Header("UI Elements")]
+    public GameObject gameOverPanel;
 
     // Start is called before the first frame update
     void Start() {
@@ -47,22 +52,27 @@ public class GameManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
+        if (playerController.health > 0) {
+            playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
 
-        //Generate new trees
-        if (treelines.Count < treelineDensity) {
-            //treeline platforms
-            lastAddedTreeline = GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
-            //decoration trees
-            lastAddedDecorationTrees = GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
+            //Generate new trees
+            if (treelines.Count < treelineDensity) {
+                //treeline platforms
+                lastAddedTreeline = GenerateTrees(treelineDensity, lastAddedTreeline, distanceBetweenTreelines, trees, treelines, treelinePrefab);
+                //decoration trees
+                lastAddedDecorationTrees = GenerateTrees(decorationTreesDensity, lastAddedDecorationTrees, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
+            }
+
+            //Destroy trees if non visible to player
+            else {
+                //treeline platforms
+                DestroyTrees(treelines);
+                //decoration trees
+                DestroyTrees(decorationTrees);
+            }
         }
-
-        //Destroy trees if non visible to player
-        else {
-            //treeline platforms
-            DestroyTrees(treelines);
-            //decoration trees
-            DestroyTrees(decorationTrees);
+        else if(!gameOverPanel.activeSelf){
+            ShowGameOverPanel();
         }
     }
 
@@ -107,6 +117,14 @@ public class GameManager : MonoBehaviour {
 
         }
 
+    }
+
+    void ShowGameOverPanel() {
+        gameOverPanel.SetActive(true);
+    }
+
+    public void Retry() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
 }
