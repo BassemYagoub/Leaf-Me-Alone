@@ -1107,6 +1107,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "DisplayMenu",
+                    "type": "Button",
+                    "id": "6e98d312-8f02-429f-91a9-15aaf69472f6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1129,6 +1138,17 @@
                     "processors": "",
                     "groups": "Generic XR Controller",
                     "action": "ThrowProjectile",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e70e07aa-9412-426b-9e62-928a18959f96",
+                    "path": "<XRController>{LeftHand}/menuButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "DisplayMenu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

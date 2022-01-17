@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,6 +9,7 @@ public class PlayerController : MonoBehaviour {
 
     public InputActionReference moveReference = null;
     public TextMeshProUGUI nbLivesUI;
+    private bool gamePaused = false;
 
     [Header("Left Hand Projectile parameters")]
     public InputActionReference throwProjectileReference = null;
@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (health > 0) {
+        if (health > 0 && !gamePaused) {
             //move left or right
             DashTowardsTarget();
 
@@ -146,21 +146,6 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void ThrowProjectile() {
-        /*RaycastHit hit;
-
-        bool touchObject = Physics.Raycast(leftHand.position, leftHand.rotation*Vector3.forward, out hit, projectileRange);
-
-        if (touchObject) {
-            //see attackable tiles within selectable tiles
-            if (hit.transform.gameObject.tag == "Enemy") {
-                Debug.Log("raycast touched enemy");
-                //hit.transform.GetComponent<EnemyController>().TakeDamage(damage);
-            }
-            else {
-                Debug.Log("raycast touched "+ hit.transform.gameObject.name);
-            }
-        }*/
-
         GameObject projectileObj = Instantiate(projectilePrefab, leftHandOrigin.position, Quaternion.identity) as GameObject;
         projectileObj.GetComponent<Rigidbody>().velocity = ((leftHandOrigin.rotation * Vector3.forward)).normalized * projectileSpeed;
     }
@@ -173,7 +158,6 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void TakeDamage(float amount) {
-        Debug.Log("damaged");
         health -= amount;
         nbLivesUI.text = health.ToString();
         if (health <= 0f) {
@@ -182,8 +166,15 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Die() {
-        Debug.Log("You lost");
         rightHand.GetComponent<XRRayInteractor>().enabled = true;
+    }
+
+    public void PauseUnpauseGame() {
+        gamePaused = !gamePaused;
+        if(gamePaused)
+            rightHand.GetComponent<XRRayInteractor>().enabled = true;
+        else
+            rightHand.GetComponent<XRRayInteractor>().enabled = false;
     }
 
 }

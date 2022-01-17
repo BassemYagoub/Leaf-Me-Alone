@@ -1,12 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour {
     public GameObject player; //XR Origin (Rig)
     public float playerAutomaticMovingSpeed = 0.04f;
     private PlayerController playerController;
+
+    [Header("General Game properties")]
+    public float timer; 
+    private int minutes;
+    private int seconds;
+    private bool gamePaused = false;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -24,7 +31,10 @@ public class GameManager : MonoBehaviour {
 
 
     [Header("UI Elements")]
-    public GameObject gameOverPanel;
+    public GameObject menuPanel;
+    public GameObject canvasTimer;
+    public GameObject timerText;
+    public InputActionReference displayMenuReference = null;
 
     // Start is called before the first frame update
     void Start() {
@@ -43,14 +53,18 @@ public class GameManager : MonoBehaviour {
             decorationTrees.Add(child.gameObject);
         }
         decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forest, decorationTrees, decorationTreesPrefab);
-
-
     }
 
     // Update is called once per frame
     void Update() {
-        if (playerController.health > 0) {
+        //playing
+        if (playerController.health > 0 && !gamePaused) {
             playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
+
+            //pause game by clicking on left hand button menu
+            if (displayMenuReference.action.triggered) {
+                PauseGame();
+            }
 
             //Generate or destroy treeline platforms
             if (treelines.Count < treelineDensity) {
@@ -67,9 +81,20 @@ public class GameManager : MonoBehaviour {
             else {
                 decorationTrees = DestroyTrees(decorationTrees);
             }
+
+            UpdateTime();
         }
-        else if (!gameOverPanel.activeSelf) {
-            ShowGameOverPanel();
+        //game paused
+        else if (playerController.health > 0 && gamePaused) { 
+            if (displayMenuReference.action.triggered) {
+                ResumeGame();
+            }
+        }
+        //game ended
+        else if (playerController.health <= 0 && !gamePaused) {
+            gamePaused = true;
+            menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+            ShowUnshowMenuPanel();
         }
     }
 
@@ -116,8 +141,33 @@ public class GameManager : MonoBehaviour {
         return treeList;
     }
 
-    void ShowGameOverPanel() {
-        gameOverPanel.SetActive(true);
+    void UpdateTime() {
+        timer += Time.deltaTime;
+        minutes = Mathf.FloorToInt(timer / 60);
+        seconds = Mathf.RoundToInt(timer % 60);
+
+        if(seconds < 10)
+            timerText.GetComponent<TextMeshProUGUI>().text = "0"+minutes + ":0"+seconds;
+        else
+            timerText.GetComponent<TextMeshProUGUI>().text = "0"+minutes + ":" + seconds;
+
+        canvasTimer.transform.position = new Vector3(canvasTimer.transform.position.x, canvasTimer.transform.position.y, canvasTimer.transform.position.z + playerAutomaticMovingSpeed);
+    }
+
+    void ShowUnshowMenuPanel() {
+        menuPanel.SetActive(!menuPanel.activeSelf);
+    }
+
+    void PauseGame() {
+        gamePaused = true;
+        playerController.PauseUnpauseGame();
+        ShowUnshowMenuPanel();
+    }
+
+    void ResumeGame() {
+        gamePaused = false;
+        playerController.PauseUnpauseGame();
+        ShowUnshowMenuPanel();
     }
 
     public void Retry() {
