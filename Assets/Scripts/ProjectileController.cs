@@ -1,9 +1,9 @@
 using UnityEngine;
 
 public class ProjectileController : MonoBehaviour {
+    public string throwerTag = "Player"; //Player or Enemy
     public float projectileDuration = 0.2f;
     private float projectileDestructionTime;
-    private bool collided;
     private float damage = 1f;
 
 
@@ -19,14 +19,18 @@ public class ProjectileController : MonoBehaviour {
     }
 
     private void OnCollisionEnter(Collision collision) {
-        if(collision.gameObject.tag != "Shuriken" && collision.gameObject.tag != "Player" && !collided) {
-
-            //Destroy projectile after hitting something
-            collided = true;
-            if(collision.gameObject.tag == "Enemy") {
+        if(throwerTag == "Player") {
+            if (collision.gameObject.tag != "Shuriken" && collision.gameObject.tag != "Player" && collision.gameObject.tag == "Enemy") {
                 collision.gameObject.GetComponent<EnemyController>().TakeDamage(damage);
             }
             Destroy(gameObject);
+            
+        }else if(throwerTag == "Enemy") {
+            if (collision.gameObject.tag == "Player") {
+                collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
+            }
+            Destroy(gameObject);
+
         }
     }
 

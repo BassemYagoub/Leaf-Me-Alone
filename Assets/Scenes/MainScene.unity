@@ -15,7 +15,7 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
   m_Fog: 0
-  m_FogColor: {r: 0.9144792, g: 0.82525396, b: 0.689904, a: 1}
+  m_FogColor: {r: 0.86660767, g: 0.9665089, b: 0.96418256, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.01
   m_LinearFogStart: 0
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.11093941, g: 0.111267865, b: 0.09103505, a: 1}
+  m_IndirectSpecularColor: {r: 0.17278802, g: 0.21591794, b: 0.29785746, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1570,7 +1570,7 @@ GameObject:
   - component: {fileID: 423230289}
   m_Layer: 0
   m_Name: XR Origin (Rig)
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2352,7 +2352,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.81768e+31, y: 2.8168747e+20, z: 1.0462568e+9, w: 7.365175e+31}
+  m_BoundingSphereOverride: {x: 0, y: 4.1361855e+33, z: 4.5904e-41, w: 1e-45}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -2364,7 +2364,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: -0.01526814, y: 0, z: 0, w: 0.9998835}
+  m_LocalRotation: {x: 0, y: 0.7178214, z: -0.6962273, w: 0}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []

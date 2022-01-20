@@ -56,7 +56,7 @@ Material:
     - _HorizonCloudSize: 4.91
     - _HorizonCloudStartPosition: -0.1
     - _HorizonCloudStep: 25
-    - _HorizonExponent: 3.0938146
+    - _HorizonExponent: 4.995579
     - _HorizonStep: 500
     - _HorizonThickness: 1
     - _MoonGlow: 0.4
@@ -67,7 +67,7 @@ Material:
     - _OverheadCloudAnimationSpeed: 300
     - _OverheadCloudFlowDirectionX: 0
     - _OverheadCloudFlowDirectionZ: -1
-    - _OverheadCloudRemapMax: 4.990854
+    - _OverheadCloudRemapMax: 4.9964333
     - _OverheadCloudRemapMin: 0.2
     - _OverheadCloudSize: 4
     - _OverheadCloudStep: 1
@@ -78,7 +78,7 @@ Material:
     - _StarsGlow0: 0.7
     - _StarsGlow1: 0.01
     - _StarsGlow2: 0.01
-    - _StarsOpacity: 0.0011190772
+    - _StarsOpacity: 0
     - _StarsSize0: 0.5
     - _StarsSize1: 0.01
     - _StarsSize2: 0.01
@@ -93,19 +93,19 @@ Material:
     m_Colors:
     - _DetailOverlayTintColor: {r: 0, g: 0, b: 0, a: 0}
     - _FogColor: {r: 0, g: 0, b: 0, a: 0}
-    - _GroundColor: {r: 0.39001673, g: 0.36501467, b: 0.41344243, a: 1}
+    - _GroundColor: {r: 0.49790573, g: 0.49742964, b: 0.4983518, a: 1}
     - _HorizonCloudColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HorizonColor: {r: 0.91434824, g: 0.8256519, b: 0.6906671, a: 1}
+    - _HorizonColor: {r: 0.8666627, g: 0.9656424, b: 0.9630932, a: 1}
     - _MoonColor: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
     - _MoonDirection: {r: 0, g: 0, b: 1, a: 0}
     - _MoonLightColor: {r: 0.7169812, g: 0.70264155, b: 0.64528304, a: 0}
     - _OverheadCloudColor: {r: 1, g: 1, b: 1, a: 0.78431374}
-    - _SkyColor: {r: 0.16820735, g: 0.2582553, b: 0.47775647, a: 1}
+    - _SkyColor: {r: 0.3160438, g: 0.6403857, b: 0.9176608, a: 1}
     - _StarsColor0: {r: 0.6886792, g: 0.6886792, b: 0.6886792, a: 0.8156863}
     - _StarsColor1: {r: 0, g: 0, b: 0, a: 0}
     - _StarsColor2: {r: 0, g: 0, b: 0, a: 0}
     - _SunColor: {r: 1, g: 0.9700814, b: 0.9009434, a: 1}
-    - _SunDirection: {r: 0, g: 0.03489393, b: 0.999391, a: 0}
+    - _SunDirection: {r: 0, g: -0.9996574, b: -0.026173592, a: 0}
     - _SunLightColor: {r: 1, g: 0.9929226, b: 0.9009434, a: 1}
   m_BuildTextureStacks: []
 --- !u!21 &-8145800507739407529
