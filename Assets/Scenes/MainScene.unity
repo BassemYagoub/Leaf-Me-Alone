@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.17278802, g: 0.21591794, b: 0.29785746, a: 1}
+  m_IndirectSpecularColor: {r: 0.17278774, g: 0.21591744, b: 0.2978568, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -437,17 +437,23 @@ MonoBehaviour:
   timer: 0
   treelinePrefab: {fileID: 6408539921318007122, guid: bce4fb9485523cb4aafb18fed5ae485a,
     type: 3}
-  trees: {fileID: 150516205}
+  treesParent: {fileID: 0}
   treelineDensity: 10
   decorationTreesPrefab: {fileID: 8466968517173888908, guid: c6d7f0600b168c14eb21f6bcb501a545,
     type: 3}
-  forest: {fileID: 879138092}
+  forestParent: {fileID: 0}
   decorationTreesDensity: 15
   menuPanel: {fileID: 1725197699}
   canvasTimer: {fileID: 152316304}
   timerText: {fileID: 1730490108}
   displayMenuReference: {fileID: -1805955475548506047, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
+  enemyPrefab: {fileID: 8016277032006592385, guid: 3630bf3c41575a64d9502dd9d36e1eca,
+    type: 3}
+  enemiesParent: {fileID: 1684360134}
+  obstaclePrefab: {fileID: 2644420169770557888, guid: 3364df55fb949954bb777c1c6d6eb8ef,
+    type: 3}
+  obstaclesParent: {fileID: 1526038884}
 --- !u!1 &150516205
 GameObject:
   m_ObjectHideFlags: 0
