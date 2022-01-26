@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class GameManager : MonoBehaviour {
     public GameObject player; //XR Origin (Rig)
@@ -16,6 +17,8 @@ public class GameManager : MonoBehaviour {
     private int minutes;
     private int seconds;
     private bool gamePaused = false;
+    private bool currentlyResumingGame = false;
+    private float timeforResumingGame = 1.5f;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -35,6 +38,7 @@ public class GameManager : MonoBehaviour {
     public GameObject menuPanel;
     public GameObject canvasTimer;
     public GameObject timerText;
+    public GameObject ResumeGameNotification;
     public InputActionReference displayMenuReference = null;
 
     [Header("Enemies")]
@@ -67,6 +71,7 @@ public class GameManager : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
+        Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
         
         //enemies
@@ -144,7 +149,7 @@ public class GameManager : MonoBehaviour {
             UpdateTime();
         }
         //game paused
-        else if (playerController.health > 0 && gamePaused) { 
+        else if (playerController.health > 0 && gamePaused && !currentlyResumingGame) { 
             if (displayMenuReference.action.triggered) {
                 ResumeGame();
             }
@@ -153,6 +158,7 @@ public class GameManager : MonoBehaviour {
         else if (playerController.health <= 0 && !gamePaused) {
             gamePaused = true;
             menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+            menuPanel.transform.GetChild(1).gameObject.SetActive(false); //hide resume button
             ShowUnshowMenuPanel();
         }
     }
@@ -265,6 +271,9 @@ public class GameManager : MonoBehaviour {
         //TO DO
     }
 
+    /// <summary>
+    /// Updates the timer shown in game
+    /// </summary>
     void UpdateTime() {
         timer += Time.deltaTime;
         minutes = Mathf.FloorToInt(timer / 60);
@@ -286,14 +295,39 @@ public class GameManager : MonoBehaviour {
         gamePaused = true;
         playerController.PauseUnpauseGame();
         ShowUnshowMenuPanel();
+        Time.timeScale = 0;
     }
 
-    void ResumeGame() {
+    /// <summary>
+    /// Coroutine to resume game after a certain time after playing an animation to warn the player about it
+    /// </summary>
+    /// <param name="seconds">the number of seconds after which the game will resume</param>
+    /// <returns></returns>
+    public IEnumerator ResumeGameAfter(float seconds) {
+        Debug.Log("resumeAfter");
+        ResumeGameNotification.SetActive(true);
+        ResumeGameNotification.GetComponent<Animator>().SetTrigger("ResumeGame");
+        currentlyResumingGame = true;
+        yield return new WaitForSecondsRealtime(seconds);
+        currentlyResumingGame = false;
+        ResumeGameNotification.SetActive(false);
+
         gamePaused = false;
+        Time.timeScale = 1;
+    }
+
+    /// <summary>
+    /// Resumes the game after changing the needed elements
+    /// </summary>
+    public void ResumeGame() {
+        StartCoroutine(ResumeGameAfter(timeforResumingGame));
         playerController.PauseUnpauseGame();
         ShowUnshowMenuPanel();
     }
 
+    /// <summary>
+    /// Reloads Scene when pressing Retry button
+    /// </summary>
     public void Retry() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
