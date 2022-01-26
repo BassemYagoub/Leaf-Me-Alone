@@ -28,6 +28,8 @@ public class PlayerController : MonoBehaviour {
     public float health = 3f;
     public float damage = 1f;
     public float dashSpeed = 1f;
+    public float recoveryFrame = .5f;
+    private float impactTime = -1f;
     private Vector3 targetPos;
 
     public GameObject rightHand;
@@ -145,6 +147,9 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Instantiates a shuriken and throws it from the left hand
+    /// </summary>
     public void ThrowProjectile() {
         GameObject projectileObj = Instantiate(projectilePrefab, leftHandOrigin.position, Quaternion.identity) as GameObject;
         projectileObj.GetComponent<Rigidbody>().velocity = ((leftHandOrigin.rotation * Vector3.forward)).normalized * projectileSpeed;
@@ -158,21 +163,28 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void TakeDamage(float amount) {
-        health -= amount;
-        nbLivesUI.text = health.ToString();
-        if (health <= 0f) {
-            Die();
+        if (Time.time > impactTime+recoveryFrame) { //if not recovering => take damage
+            impactTime = Time.time;
+            health -= amount;
+            nbLivesUI.text = health.ToString();
+            if (health <= 0f) {
+                Die();
+            }
         }
     }
 
     void Die() {
+        Time.timeScale = 0; //stop all external movements/animations
         rightHand.GetComponent<XRRayInteractor>().enabled = true;
     }
 
+    /// <summary>
+    /// Pauses or Resumes game depending on the game state
+    /// </summary>
     public void PauseUnpauseGame() {
         gamePaused = !gamePaused;
         if(gamePaused)
-            rightHand.GetComponent<XRRayInteractor>().enabled = true;
+            rightHand.GetComponent<XRRayInteractor>().enabled = true; //adds a raycast on right hand to interact with UI
         else
             rightHand.GetComponent<XRRayInteractor>().enabled = false;
     }
