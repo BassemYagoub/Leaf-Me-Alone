@@ -100,13 +100,13 @@ public class PlayerController : MonoBehaviour {
         float treeDetectionWidth = 0.1f;
 
         for (int i = 0; i < treelines.Count - 1; i++) {
-            if (transform.position.z >= treelines[i].transform.position.z - treeDetectionWidth && transform.position.z <= treelines[i].transform.position.z + distanceBetweenTreelines / 2) {
+            if (transform.position.z >= treelines[i].transform.position.z - treeDetectionWidth && transform.position.z < treelines[i].transform.position.z + distanceBetweenTreelines / 2) {
                 //if on branch or between branch and middle of distance with next branch => jump
                 break;
             }
             else if (transform.position.z > treelines[i].transform.position.z + distanceBetweenTreelines / 2 && transform.position.z <= treelines[i + 1].transform.position.z - treeDetectionWidth) {
                 //if above middle of distance with next branch => simulate gravity
-                yOffset *= -1;
+                yOffset *= -1.098f;
                 break;
             }
         }

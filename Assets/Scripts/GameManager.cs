@@ -152,6 +152,7 @@ public class GameManager : MonoBehaviour {
             }
 
             UpdateTime();
+            playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
         }
         //game paused
         else if (playerController.health > 0 && gamePaused && !currentlyResumingGame) { 
@@ -293,7 +294,7 @@ public class GameManager : MonoBehaviour {
 
         //generate enemies
         for (int i = 0; i < nbEnemies; i++) {
-            rand_branch = branches[Random.Range(0, branches.Count-1)];
+            rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
             newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(0,0.15f,0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
@@ -305,7 +306,7 @@ public class GameManager : MonoBehaviour {
 
         //generate obstacles
         for (int i = 0; i < nbObstacles; i++) {
-            rand_branch = branches[Random.Range(0, branches.Count - 1)];
+            rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
             newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(0, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
@@ -333,7 +334,7 @@ public class GameManager : MonoBehaviour {
     void UpdateTime() {
         timer += Time.deltaTime;
         minutes = Mathf.FloorToInt(timer / 60);
-        seconds = Mathf.RoundToInt(timer % 60);
+        seconds = Mathf.RoundToInt(timer % 59);
 
         if(seconds < 10)
             timerText.GetComponent<TextMeshProUGUI>().text = "0"+minutes + ":0"+seconds;
