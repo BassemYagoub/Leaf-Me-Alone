@@ -167,6 +167,9 @@ public class GameManager : MonoBehaviour {
     List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab) {
         Vector3 newPos;
         GameObject lastAddedTree = trees[trees.Count-1];
+        bool isTreeLine = false;
+        if (parent.name.Equals("Trees"))
+            isTreeLine = true;
 
         for (int i = 0; i < density; i++) {
             newPos = new Vector3(lastAddedTree.transform.position.x,
@@ -176,8 +179,8 @@ public class GameManager : MonoBehaviour {
             lastAddedTree = Instantiate(treePrefab, newPos, treePrefab.transform.rotation, parent.gameObject.transform);
             lastAddedTree.name = lastAddedTree.name + " " + (i + 1);
             trees.Add(lastAddedTree);
-            GenerateEnemiesAndObstacles(lastAddedTree);
-
+            if(isTreeLine)
+                GenerateEnemiesAndObstacles(lastAddedTree);
         }
         return trees;
 
@@ -209,54 +212,54 @@ public class GameManager : MonoBehaviour {
 
     //generate enemies and obstacles on treeline
     private void GenerateEnemiesAndObstacles(GameObject treeline) {
-        int nb = 0; //nb of enemies/obstacles to generate on treeline
-        Vector3 newPos;
-        //Quaternion enemyRot = Quaternion.Euler(0, 180, 0);
-        Quaternion obstacleRot = Quaternion.Euler(7.761f, 2.33f, 3.05f);
 
-        //random branch positioning
-        float left_x = -2.4f;
-        float middle_x = 0;
-        float right_x = 2.4f;
-
-        List<float> branches = new List<float> { left_x, middle_x, right_x };
-        float rand_x;
+        List<string> branches = new List<string> { "BranchLeft", "BranchCenter", "BranchRight" };
+        string rand_branch;
 
         GameObject newObj; //new enemy/obstacle
 
-        if (nbEnemiesToGenerate != nbEnemiesGenerated) {
-            nb = Random.Range(0, nbEnemiesMaxByTreeline);
+        GameObject slot;
+        int nbEnemies = 0;
+        int nbObstacles = 0;
 
-            for (int i = 0; i < nb; i++) {
-                rand_x = branches[Random.Range(0, 2)];
+        if (nbEnemiesToGenerate != nbEnemiesGenerated)
+            nbEnemies = Random.Range(0, nbEnemiesMaxByTreeline);
 
-                newPos = new Vector3(rand_x,
-                    enemyPrefab.transform.position.y,
-                    enemyPrefab.transform.position.z + distanceBetweenTreelines);
+        if (nbObstaclesToGenerate != nbObstaclesGenerated)
+            nbObstacles = Random.Range(0, nbObstaclesMaxByTreeline);
 
-                newObj = Instantiate(enemyPrefab, newPos, enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
-                //newObj.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
-                newObj.name = newObj.name + " " + (i + 1);
-                enemies.Add(newObj);
-            }
+        if(nbEnemies + nbObstacles > 3) {
+            nbEnemies /= 2;
+            nbObstacles /= 2;
 
+            if (Random.Range(0, 1) == 0)
+                nbEnemies++;
+            else
+                nbObstacles++;
         }
-        if(nbObstaclesToGenerate != nbObstaclesGenerated) {
-            nb = Random.Range(0, nbObstaclesMaxByTreeline);
 
-            for (int i = 0; i < nb; i++) {
-                rand_x = branches[Random.Range(0, 2)];
-
-                newPos = new Vector3(rand_x,
-                    obstaclePrefab.transform.position.y,
-                    obstaclePrefab.transform.position.z + distanceBetweenTreelines);
-
-                newObj = Instantiate(obstaclePrefab, newPos, obstacleRot, obstaclesParent.gameObject.transform);
-                newObj.name = newObj.name + " " + (i + 1);
-                obstacles.Add(newObj);
-            }
+        //generate enemies
+        for (int i = 0; i < nbEnemies; i++) {
+            rand_branch = branches[Random.Range(0, branches.Count-1)];
+            branches.Remove(rand_branch);
+            slot = treeline.transform.Find(rand_branch).gameObject;
+            newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(0,0.15f,0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
+            newObj.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+            newObj.name = newObj.name + " " + (i + 1);
+            enemies.Add(newObj);
         }
-        
+
+
+        //generate obstacles
+        for (int i = 0; i < nbObstacles; i++) {
+            rand_branch = branches[Random.Range(0, branches.Count - 1)];
+            branches.Remove(rand_branch);
+            slot = treeline.transform.Find(rand_branch).gameObject;
+            newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(0, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
+            newObj.name = newObj.name + " " + (i + 1);
+            obstacles.Add(newObj);
+        }
+
     }
 
     private void LevelGeneration() {
