@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour {
     private float timeStep;
 
     [Header("General Game properties")]
-    public float timer; 
+    private float timer; 
     private int minutes;
     private int seconds;
     private bool gamePaused = false;
@@ -292,6 +292,13 @@ public class GameManager : MonoBehaviour {
 
     void ShowUnshowMenuPanel() {
         menuPanel.SetActive(!menuPanel.activeSelf);
+    }
+
+    /// <summary>
+    /// Starts game (called in title screen menu button)
+    /// </summary>
+    public void StartGame() {
+        SceneManager.LoadScene(1);
     }
 
     void PauseGame() {
