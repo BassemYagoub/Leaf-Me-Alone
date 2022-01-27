@@ -6,13 +6,14 @@ using UnityEngine.InputSystem;
 using System.Collections;
 
 public class GameManager : MonoBehaviour {
+
+    [Header("General Game properties")]
     public GameObject player; //XR Origin (Rig)
     public float playerAutomaticMovingSpeed = 0.04f;
+    public GameObject background;
     private PlayerController playerController;
     private float depthSpeed;
     private float timeStep;
-
-    [Header("General Game properties")]
     private float timer; 
     private int minutes;
     private int seconds;
@@ -120,6 +121,11 @@ public class GameManager : MonoBehaviour {
         //playing
         if (playerController.health > 0 && !gamePaused) {
             playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
+            //move background with player on z axis
+            background.transform.position = new Vector3(
+                background.transform.position.x,
+                background.transform.position.y,
+                player.transform.position.z);
 
             //pause game by clicking on left hand button menu
             if (displayMenuReference.action.triggered) {
@@ -134,8 +140,7 @@ public class GameManager : MonoBehaviour {
             }
             else {
                 treelines = DestroyFromList(treelines);
-                //enemies = DestroyFromList(enemies);
-                //obstacles = DestroyFromList(obstacles);
+                DestroyEnemiesAndObstacles();
             }
 
             //Generate or destroy decoration trees
@@ -163,7 +168,15 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-
+    /// <summary>
+    /// generate trees
+    /// </summary>
+    /// <param name="density">nb to generate</param>
+    /// <param name="distanceBetweenTrees">distance that seperate trees</param>
+    /// <param name="parent">parent gameobject</param>
+    /// <param name="trees">list of trees</param>
+    /// <param name="treePrefab">tree prefab</param>
+    /// <returns></returns>
     List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab) {
         Vector3 newPos;
         GameObject lastAddedTree = trees[trees.Count-1];
@@ -186,6 +199,11 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// destroy objects (treelines and decoration trees) that are behind the player
+    /// </summary>
+    /// <param name="objects_list"></param>
+    /// <returns></returns>
     List<GameObject> DestroyFromList(List<GameObject> objects_list) {
         List<GameObject> objsToDestroy = new List<GameObject>();
         float offSetToDeleteObjs = 10f;
@@ -205,12 +223,47 @@ public class GameManager : MonoBehaviour {
         foreach (GameObject objToDestroy in objsToDestroy) {
             objects_list.Remove(objToDestroy);
             Destroy(objToDestroy);
-
         }
+
         return objects_list;
     }
 
-    //generate enemies and obstacles on treeline
+    /// <summary>
+    /// destroy enemies and obstacles that are behind the player
+    /// </summary>
+    private void DestroyEnemiesAndObstacles() {
+        float offSetToDeleteObjs = 10f;
+
+        //destruction of remaining enemies that are behing the player
+        List<GameObject> enemiesToDestroy = new List<GameObject>();
+        foreach (GameObject enemy in enemies) {
+            if (enemy != null && enemy.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
+                //Debug.Log(enemy.name);
+                enemiesToDestroy.Add(enemy);
+            }
+        }
+        foreach (GameObject enemy in enemiesToDestroy) {
+            enemies.Remove(enemy);
+            Destroy(enemy);
+        }
+
+        //destruction of remaining obstacles that are behing the player
+        List<GameObject> obstaclesToDestroy = new List<GameObject>();
+        foreach (GameObject obstacle in obstacles) {
+            if (obstacle != null && obstacle.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
+                obstaclesToDestroy.Add(obstacle);
+            }
+        }
+        foreach (GameObject obstacle in obstaclesToDestroy) {
+            obstacles.Remove(obstacle);
+            Destroy(obstacle);
+        }
+    }
+
+    /// <summary>
+    /// generate enemies and obstacles on treeline
+    /// </summary>
+    /// <param name="treeline"></param>
     private void GenerateEnemiesAndObstacles(GameObject treeline) {
 
         List<string> branches = new List<string> { "BranchLeft", "BranchCenter", "BranchRight" };
