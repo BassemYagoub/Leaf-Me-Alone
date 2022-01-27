@@ -33,8 +33,8 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0.009444732, y: -0.30563295, z: -0.029408187, w: 0.95164824}
     baseScale: {x: 1.73, y: 1.68, z: 1.66}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/AutumnTree1.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/AutumnTree1.prefab
   - prefab: {fileID: 1409312262755260, guid: 0a4b449c7ce553e4c941c0ee49064a51, type: 3}
     sharedMesh: {fileID: 4300000, guid: de58b283718058b4c85bb991e8d5a09c, type: 3}
     sharedMaterials:
@@ -55,8 +55,8 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0, y: 0, z: 0, w: 1}
     baseScale: {x: 1, y: 1, z: 1}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/SpringTree1.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/SpringTree1.prefab
   - prefab: {fileID: 426123789145460816, guid: 6162978843b812645b55d91aa94ded4c, type: 3}
     sharedMesh: {fileID: 4300004, guid: 0f4df284e59e6864b827cf920bcde2eb, type: 3}
     sharedMaterials:
@@ -77,8 +77,8 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0, y: 0, z: 0, w: 1}
     baseScale: {x: 1, y: 1, z: 1}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/Pine_00.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/Pine_00.prefab
   - prefab: {fileID: 5127074640302750214, guid: 46840f8810e5e934e92b3611970381f6,
       type: 3}
     sharedMesh: {fileID: 4300010, guid: 0f4df284e59e6864b827cf920bcde2eb, type: 3}
@@ -100,8 +100,8 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0, y: 0, z: 0, w: 1}
     baseScale: {x: 1, y: 1, z: 1}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/Pine_01.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/Pine_01.prefab
   - prefab: {fileID: 3018262670833896881, guid: 0c38cfea44e4e9c469223159012ec53f,
       type: 3}
     sharedMesh: {fileID: 4300022, guid: 0f4df284e59e6864b827cf920bcde2eb, type: 3}
@@ -123,8 +123,8 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0, y: 0, z: 0, w: 1}
     baseScale: {x: 1, y: 1, z: 1}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/Dead.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/Dead.prefab
   - prefab: {fileID: 2902002091403816401, guid: a9f70ca3f0b87524699bd1d985191322,
       type: 3}
     sharedMesh: {fileID: 4300024, guid: 0f4df284e59e6864b827cf920bcde2eb, type: 3}
@@ -146,5 +146,5 @@ MonoBehaviour:
     pivotOffset: 0
     baseRotation: {x: 0, y: 0, z: 0, w: 1}
     baseScale: {x: 1, y: 1, z: 1}
-    editor_PrefabAssetPath: Assets/Polaris - Low Poly Ecosystem/Polaris - Low Poly
-      Terrain Engine/Samples/Pinwheel Studio/Prefabs/Dead_Break.prefab
+    editor_PrefabAssetPath: Assets/Imported Assets/Polaris - Low Poly Ecosystem/Polaris
+      - Low Poly Terrain Engine/Samples/Pinwheel Studio/Prefabs/Dead_Break.prefab
