@@ -1,0 +1,21 @@
+{
+	"playerAutomaticMovingSpeed" : 0.06,
+	"invinciblityFrame" : 0.6,
+	"regenDelay" : 6,
+	"playerFireRate" : 10,
+	"treelineDensity" : 15,
+	"distanceBetweenTreelines" : 4,
+	"nbEnemiesMin" : 5,
+	"nbEnemiesMax" : 15,
+	"enemyMinDamage" : 1,
+	"enemyMaxDamage" : 1,
+	"nbEnemiesMaxByTreeline" : 2,
+	"verticalEnemiesPerc" : 0,
+	"horizontalEnemiesPerc" : 0,
+	"enemyFireRate" : 1,
+	"nbObstaclesMin" : 5,
+	"nbObstaclesMax" : 15,
+	"obstacleMinDamage" : 1,
+	"obstacleMaxDamage" : 1,
+	"nbObstaclesMaxByTreeline" : 2
+}
