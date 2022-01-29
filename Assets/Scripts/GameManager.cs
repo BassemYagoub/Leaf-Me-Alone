@@ -92,13 +92,14 @@ public class GameManager : MonoBehaviour {
 
         currentLevel = 0;
         readGameLevel(levels[currentLevel]);
+        currentLevel++;
         //enemies
         //nbEnemiesMin = 5;
         //nbEnemiesMax = 10;
         //nbEnemiesMaxByTreeline = 2;
 
         //nbEnemiesGenerated = 0;
-        nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax);
+        nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
 
         enemies = new List<GameObject>();
         foreach (Transform child in enemiesParent.transform) {
@@ -111,7 +112,7 @@ public class GameManager : MonoBehaviour {
         //nbObstaclesMaxByTreeline = 2;
 
         //nbObstaclesGenerated = 0;
-        nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax);
+        nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
 
         obstacles = new List<GameObject>();
         foreach (Transform child in obstaclesParent.transform) {
@@ -138,12 +139,7 @@ public class GameManager : MonoBehaviour {
     void Update() {
         //playing
         if (playerController.health > 0 && !gamePaused) {
-            playerController.AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
-            //move background with player on z axis
-            background.transform.position = new Vector3(
-                background.transform.position.x,
-                background.transform.position.y,
-                player.transform.position.z);
+            AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
 
             //pause game by clicking on left hand button menu
             if (displayMenuReference.action.triggered) {
@@ -152,17 +148,18 @@ public class GameManager : MonoBehaviour {
 
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < treelineDensity) {
-                nbObstaclesGenerated = 0;
-                nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax);
-                treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
-                currentLevel++;
+                Debug.Log("aaazazazaz "+currentLevel);
                 if(currentLevel < levels.Count) {
                     readGameLevel(levels[currentLevel]);
+                    currentLevel++;
                     //update values to generate
-                    nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax);
-                    nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax);
+                    nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
+                    nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
                     Debug.Log("nbObstaclesToGenerate : " + nbObstaclesToGenerate);
                     Debug.Log("nbEnemiesToGenerate : " + nbEnemiesToGenerate);
+
+                    nbObstaclesGenerated = 0;
+                    treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
                 }
             }
             else {
@@ -178,7 +175,7 @@ public class GameManager : MonoBehaviour {
                 decorationTrees = DestroyFromList(decorationTrees);
             }
 
-            UpdateTime();
+            UpdateTimer();
             playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
         }
         //game paused
@@ -189,10 +186,7 @@ public class GameManager : MonoBehaviour {
         }
         //game ended
         else if (playerController.health <= 0 && !gamePaused) {
-            gamePaused = true;
-            menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
-            menuPanel.transform.GetChild(1).gameObject.SetActive(false); //hide resume button
-            ShowUnshowMenuPanel();
+            GameOver();
         }
     }
 
@@ -307,10 +301,10 @@ public class GameManager : MonoBehaviour {
         int nbObstacles = 0;
 
         if (nbEnemiesToGenerate != nbEnemiesGenerated)
-            nbEnemies = Random.Range(0, nbEnemiesMaxByTreeline);
+            nbEnemies = Random.Range(0, nbEnemiesMaxByTreeline+1);
 
         if (nbObstaclesToGenerate != nbObstaclesGenerated)
-            nbObstacles = Random.Range(0, nbObstaclesMaxByTreeline);
+            nbObstacles = Random.Range(0, nbObstaclesMaxByTreeline+1);
 
         if(nbEnemies + nbObstacles > 3) {
             nbEnemies /= 2;
@@ -359,9 +353,42 @@ public class GameManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Moves the player forward automatically (and background too)
+    /// </summary>
+    /// <param name="movingSpeed">the moving speed</param>
+    /// <param name="distanceBetweenTreelines">distance between each tree rows</param>
+    /// <param name="treelines">reference to treelines list</param>
+    public void AutomaticMoveForward(float movingSpeed, float distanceBetweenTreelines, List<GameObject> treelines) {
+        float yOffset = 0.01f; //allows to simulate a jump
+        float treeDetectionWidth = 0.1f;
+
+        for (int i = 0; i < treelines.Count - 1; i++) {
+            if (player.transform.position.z >= treelines[i].transform.position.z - treeDetectionWidth && player.transform.position.z < treelines[i].transform.position.z + distanceBetweenTreelines / 2) {
+                //if on branch or between branch and middle of distance with next branch => jump
+                break;
+            }
+            else if (player.transform.position.z > treelines[i].transform.position.z + distanceBetweenTreelines / 2 && player.transform.position.z <= treelines[i + 1].transform.position.z - treeDetectionWidth) {
+                //if above middle of distance with next branch => simulate gravity
+                yOffset *= -1.098f;
+                break;
+            }
+        }
+
+        player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y + yOffset, player.transform.position.z + movingSpeed);
+
+
+        //move background with player on z axis
+        background.transform.position = new Vector3(
+            background.transform.position.x,
+            background.transform.position.y,
+            player.transform.position.z
+        );
+    }
+
+    /// <summary>
     /// Updates the timer shown in game
     /// </summary>
-    void UpdateTime() {
+    void UpdateTimer() {
         timer += Time.deltaTime;
         minutes = Mathf.FloorToInt(timer / 60);
         seconds = Mathf.RoundToInt(timer % 59);
@@ -424,6 +451,16 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     public void Retry() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    /// <summary>
+    /// Pauses game, changes menu text to Game Over and hide Resume button
+    /// </summary>
+    public void GameOver() {
+        gamePaused = true;
+        menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+        menuPanel.transform.GetChild(1).gameObject.SetActive(false); //hide resume button
+        ShowUnshowMenuPanel();
     }
 
     private void readGameLevel(string JSONfile) {

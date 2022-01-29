@@ -94,30 +94,6 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Moves the player forward automatically
-    /// </summary>
-    /// <param name="movingSpeed">the moving speed</param>
-    /// <param name="distanceBetweenTreelines">distance between each tree rows</param>
-    /// <param name="treelines">reference to treelines list</param>
-    public void AutomaticMoveForward(float movingSpeed, float distanceBetweenTreelines, List<GameObject> treelines) {
-        float yOffset = 0.01f; //allows to simulate a jump
-        float treeDetectionWidth = 0.1f;
-
-        for (int i = 0; i < treelines.Count - 1; i++) {
-            if (transform.position.z >= treelines[i].transform.position.z - treeDetectionWidth && transform.position.z < treelines[i].transform.position.z + distanceBetweenTreelines / 2) {
-                //if on branch or between branch and middle of distance with next branch => jump
-                break;
-            }
-            else if (transform.position.z > treelines[i].transform.position.z + distanceBetweenTreelines / 2 && transform.position.z <= treelines[i + 1].transform.position.z - treeDetectionWidth) {
-                //if above middle of distance with next branch => simulate gravity
-                yOffset *= -1.098f;
-                break;
-            }
-        }
-        
-        transform.position = new Vector3(transform.position.x, transform.position.y+yOffset, transform.position.z+movingSpeed);
-    }
 
     /// <summary>
     /// Updates the target position (called when left joystick is triggered)
