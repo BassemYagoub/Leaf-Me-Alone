@@ -90,9 +90,17 @@ public class GameManager : MonoBehaviour {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
 
-        currentLevel = 0;
-        readGameLevel(levels[currentLevel]);
-        currentLevel++;
+        if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
+            currentLevel = 0;
+            readGameLevel(levels[currentLevel]);
+            currentLevel++;
+        }
+        else {
+            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + "player_profile"+ PlayerPrefs.GetInt("player_profile") + ".json");
+            GameResult playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
+            currentLevel = playerProfile.playerLevel;
+            readGameLevel(levels[currentLevel]);
+        }
         //enemies
         //nbEnemiesMin = 5;
         //nbEnemiesMax = 10;
@@ -148,7 +156,6 @@ public class GameManager : MonoBehaviour {
 
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < treelineDensity) {
-                Debug.Log("aaazazazaz "+currentLevel);
                 if(currentLevel < levels.Count) {
                     readGameLevel(levels[currentLevel]);
                     currentLevel++;
@@ -310,7 +317,7 @@ public class GameManager : MonoBehaviour {
             nbEnemies /= 2;
             nbObstacles /= 2;
 
-            if (Random.Range(0, 1) == 0)
+            if (Random.Range(0, 2) == 0)
                 nbEnemies++;
             else
                 nbObstacles++;
@@ -406,9 +413,18 @@ public class GameManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Starts game (called in title screen menu button)
+    /// Starts new game (called in title screen menu button)
     /// </summary>
-    public void StartGame() {
+    public void StartNewGame() {
+        PlayerPrefs.SetInt("player_profile", -1);
+        SceneManager.LoadScene(1);
+    }
+
+    /// <summary>
+    /// Starts a game based on a profile (called in title screen menu button)
+    /// </summary>
+    public void ContinueGame() {
+        PlayerPrefs.SetInt("player_profile", 0);
         SceneManager.LoadScene(1);
     }
 
@@ -459,7 +475,8 @@ public class GameManager : MonoBehaviour {
     public void GameOver() {
         gamePaused = true;
         menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
-        menuPanel.transform.GetChild(1).gameObject.SetActive(false); //hide resume button
+        menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
+        menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
         ShowUnshowMenuPanel();
     }
 
