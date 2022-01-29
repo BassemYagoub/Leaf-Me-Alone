@@ -10,6 +10,7 @@ TagManager:
   - Enemy
   - Shuriken
   - Obstacle
+  - Fireball
   layers:
   - Default
   - TransparentFX

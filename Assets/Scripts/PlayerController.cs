@@ -7,8 +7,10 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class PlayerController : MonoBehaviour {
 
 
+    [Header("UI relative to player")]
     public InputActionReference moveReference = null;
     public TextMeshProUGUI nbLivesUI;
+    public GameObject feedbackText;
     private bool gamePaused = false;
 
     [Header("Left Hand Projectile parameters")]
@@ -56,6 +58,7 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+
         if (health > 0 && !gamePaused) {
             //move left or right
             DashTowardsTarget();
@@ -146,7 +149,8 @@ public class PlayerController : MonoBehaviour {
     /// <param name="collision">the object that hit the player</param>
     private void OnCollisionEnter(Collision collision) {
         Debug.Log("collision with "+ collision.gameObject.name);
-        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Obstacle") {
+        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Obstacle" || collision.gameObject.tag == "Fireball") {
+            UpdateFeedbackText(collision);
             TakeDamage(1f);
         }
     }
@@ -156,6 +160,26 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     void UpdateHealthUI() {
         nbLivesUI.text = health.ToString();
+    }
+
+    /// <summary>
+    /// Updates feedback text in Menu Panel (after taking a hit)
+    /// </summary>
+    void UpdateFeedbackText(Collision collision) {
+        if (collision.gameObject.tag == "Fireball") {
+            feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : You can deflect projectiles with your katana.";
+        }
+        if (collision.gameObject.tag == "Obstacle") {
+            feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : Obstacles can be destroyed with your katana.";
+        }
+        else if (collision.gameObject.tag == "Enemy") {
+            if (Random.Range(0, 2) == 0) {
+                feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : Avoid bumping into enemies by dashing left and right.";
+            }
+            else {
+                feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : Avoid bumping into enemies by slicing them or throwing shuriken at them.";
+            }
+        }
     }
 
     /// <summary>

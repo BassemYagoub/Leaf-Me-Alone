@@ -1,7 +1,7 @@
 {
 	"playerAutomaticMovingSpeed": 0.04,
 	"invinciblityFrame": 1,
-	"regenDelay": 3,
+	"regenDelay": 0.05,
 	"playerFireRate": 1.5,
 	"treelineDensity": 10,
 	"distanceBetweenTreelines": 4,
