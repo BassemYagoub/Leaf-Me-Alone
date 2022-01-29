@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour {
     private bool gamePaused = false;
     private bool currentlyResumingGame = false;
     private float timeforResumingGame = 1.5f;
+    public enum playerCategory { VeryBad, Bad, Average, Good, VeryGood };
+    private float playerLevel;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -28,6 +30,7 @@ public class GameManager : MonoBehaviour {
     public int treelineDensity; //nb of treelines to instantiate //10
     private float distanceBetweenTreelines = 4;
     private List<GameObject> treelines;
+    private int nbTreesOnScreen = 10;
 
     [Header("Background trees for decoration")]
     public GameObject decorationTreesPrefab;
@@ -58,6 +61,8 @@ public class GameManager : MonoBehaviour {
     private int nbEnemiesMaxByTreeline;
     private float verticalEnemiesPerc;
     private float horizontalEnemiesPerc;
+    private int totalEnemiesGenerated;
+    private int totalEnemiesBeaten;
 
     [Header("Obstacles")]
     public GameObject obstaclePrefab;
@@ -70,6 +75,8 @@ public class GameManager : MonoBehaviour {
     private float obstacleMinDamage;
     private float obstacleMaxDamage;
     private int nbObstaclesMaxByTreeline;
+    private int totalObstaclesGenerated;
+    private int totalObstaclesBeaten;
 
     //calibration phase
     private List<string> levels = new List<string> {
@@ -91,6 +98,7 @@ public class GameManager : MonoBehaviour {
         playerController = player.GetComponent<PlayerController>();
 
         currentLevel = 0;
+        playerLevel = 0;
         readGameLevel(levels[currentLevel]);
         currentLevel++;
         //enemies
@@ -98,7 +106,9 @@ public class GameManager : MonoBehaviour {
         //nbEnemiesMax = 10;
         //nbEnemiesMaxByTreeline = 2;
 
-        //nbEnemiesGenerated = 0;
+        nbEnemiesGenerated = 0;
+        totalEnemiesGenerated = 0;
+        totalEnemiesBeaten = 0;
         nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
 
         enemies = new List<GameObject>();
@@ -111,7 +121,9 @@ public class GameManager : MonoBehaviour {
         //nbObstaclesMax = 10;
         //nbObstaclesMaxByTreeline = 2;
 
-        //nbObstaclesGenerated = 0;
+        nbObstaclesGenerated = 0;
+        totalObstaclesGenerated = 0;
+        totalObstaclesBeaten = 0;
         nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
 
         obstacles = new List<GameObject>();
@@ -147,11 +159,12 @@ public class GameManager : MonoBehaviour {
             }
 
             //Generate or destroy treeline platforms & enemies/obstacles
-            if (treelines.Count < treelineDensity) {
+            if (treelines.Count < nbTreesOnScreen) {
                 Debug.Log("aaazazazaz "+currentLevel);
                 if(currentLevel < levels.Count) {
                     readGameLevel(levels[currentLevel]);
                     currentLevel++;
+                    playerLevel += 20;
                     //update values to generate
                     nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
                     nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
@@ -161,6 +174,9 @@ public class GameManager : MonoBehaviour {
                     nbObstaclesGenerated = 0;
                     treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
                 }
+                else {
+                    LevelGeneration();
+                }
             }
             else {
                 treelines = DestroyFromList(treelines);
@@ -168,7 +184,7 @@ public class GameManager : MonoBehaviour {
             }
 
             //Generate or destroy decoration trees
-            if (decorationTrees.Count < decorationTreesDensity) {
+            if (decorationTrees.Count < nbTreesOnScreen) {
                 decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
             }
             else {
@@ -187,25 +203,35 @@ public class GameManager : MonoBehaviour {
         //game ended
         else if (playerController.health <= 0 && !gamePaused) {
             GameOver();
+            if (currentLevel > 0 && currentLevel < levels.Count) {
+                playerLevel -= 20;
+            }
+            //TO DO : save player category & save game result
         }
+
     }
 
-    /// <summary>
-    /// generate trees
-    /// </summary>
-    /// <param name="density">nb to generate</param>
-    /// <param name="distanceBetweenTrees">distance that seperate trees</param>
-    /// <param name="parent">parent gameobject</param>
-    /// <param name="trees">list of trees</param>
-    /// <param name="treePrefab">tree prefab</param>
-    /// <param name="spawnObjectsAfterXTreelines">spawn enemies/obstacles after x treelines created</param>
-    /// <returns></returns>
-    List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
+        /// <summary>
+        /// generate trees
+        /// </summary>
+        /// <param name="density">nb to generate</param>
+        /// <param name="distanceBetweenTrees">distance that seperate trees</param>
+        /// <param name="parent">parent gameobject</param>
+        /// <param name="trees">list of trees</param>
+        /// <param name="treePrefab">tree prefab</param>
+        /// <param name="spawnObjectsAfterXTreelines">spawn enemies/obstacles after x treelines created</param>
+        /// <returns></returns>
+        List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
         Vector3 newPos;
-        GameObject lastAddedTree = trees[trees.Count-1];
+        GameObject lastAddedTree;
+        Debug.Log(trees.Count);
+        lastAddedTree = trees[trees.Count - 1];
+        
         bool isTreeLine = false;
         if (parent.name.Equals("Trees"))
             isTreeLine = true;
+        else
+            Debug.Log("decoration trees " + density);
 
         for (int i = 0; i < density; i++) {
             newPos = new Vector3(lastAddedTree.transform.position.x,
@@ -215,8 +241,10 @@ public class GameManager : MonoBehaviour {
             lastAddedTree = Instantiate(treePrefab, newPos, treePrefab.transform.rotation, parent.gameObject.transform);
             lastAddedTree.name = lastAddedTree.name + " " + (i + 1);
             trees.Add(lastAddedTree);
+
             if(isTreeLine && spawnObjectsAfterXTreelines == 0)
                 GenerateEnemiesAndObstacles(lastAddedTree);
+            
             if (spawnObjectsAfterXTreelines > 0)
                 spawnObjectsAfterXTreelines--;
         }
@@ -261,28 +289,50 @@ public class GameManager : MonoBehaviour {
 
         //destruction of remaining enemies that are behing the player
         List<GameObject> enemiesToDestroy = new List<GameObject>();
+        List<GameObject> enemiesToRemove = new List<GameObject>();
+
         foreach (GameObject enemy in enemies) {
-            if (enemy != null && enemy.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
+            if(enemy == null) {
+                enemiesToRemove.Add(enemy);
+                totalEnemiesBeaten += 1;
+            }
+            else if (enemy.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
                 //Debug.Log(enemy.name);
                 enemiesToDestroy.Add(enemy);
+                totalEnemiesBeaten += 1;
             }
+
         }
         foreach (GameObject enemy in enemiesToDestroy) {
             enemies.Remove(enemy);
             Destroy(enemy);
         }
+        foreach (GameObject enemy in enemiesToRemove) {
+            enemies.Remove(enemy);
+        }
 
         //destruction of remaining obstacles that are behing the player
         List<GameObject> obstaclesToDestroy = new List<GameObject>();
+        List<GameObject> obstaclesToRemove = new List<GameObject>();
+
         foreach (GameObject obstacle in obstacles) {
-            if (obstacle != null && obstacle.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
+            if(obstacle == null) {
+                obstaclesToRemove.Add(obstacle);
+                totalObstaclesBeaten += 1;
+            }
+            else if (obstacle.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
                 obstaclesToDestroy.Add(obstacle);
+                totalObstaclesBeaten += 1;
             }
         }
         foreach (GameObject obstacle in obstaclesToDestroy) {
             obstacles.Remove(obstacle);
             Destroy(obstacle);
         }
+        foreach (GameObject obstacle in obstaclesToRemove) {
+            obstacles.Remove(obstacle);
+        }
+
     }
 
     /// <summary>
@@ -316,6 +366,9 @@ public class GameManager : MonoBehaviour {
                 nbObstacles++;
         }
 
+        totalEnemiesGenerated += nbEnemies;
+        totalObstaclesGenerated += nbObstacles;
+
         //generate enemies
         for (int i = 0; i < nbEnemies; i++) {
             rand_branch = branches[Random.Range(0, branches.Count)];
@@ -340,12 +393,30 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// level generation on update after calibration phase
+    /// </summary>
     private void LevelGeneration() {
-        //TO DO
+        //TO DO : UpdateDifficulty
+        Debug.Log("levelgeneration ---");
+        Debug.Log("playerLevel " + playerLevel);
+        Debug.Log("lvl " + (int)playerLevel/20);
+
+        readGameLevel(levels[(int)playerLevel/20]);
+        //update values to generate
+        nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax + 1);
+        nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax + 1);
+        //Debug.Log("nbObstaclesToGenerate : " + nbObstaclesToGenerate);
+        //Debug.Log("nbEnemiesToGenerate : " + nbEnemiesToGenerate);
+
+        nbObstaclesGenerated = 0;
+        treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
+        decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
     }
 
     private void UpdateDifficulty() {
         //TO DO
+        ////UpdateEnemiesType
     }
 
     private void UpdateEnemiesType(GameObject enemy, Collider collider) {

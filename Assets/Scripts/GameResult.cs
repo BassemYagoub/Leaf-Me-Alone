@@ -16,7 +16,7 @@ public class GameResult
     public int nbVerticalEnemiesBeaten;
     public int nbHorizontalEnemies;
     public int nbHorizontalEnemiesBeaten;
-    public enum playerCategory {VeryGood, Good, Average, Bad, VeryBad};
+    public int playerLevel;
 
     //public GameResult importGameResult(string JSONfile) {
     //    return JsonUtility.FromJson<GameResult>(JSONfile);
