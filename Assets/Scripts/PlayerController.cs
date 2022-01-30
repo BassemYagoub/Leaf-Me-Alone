@@ -30,7 +30,8 @@ public class PlayerController : MonoBehaviour {
     public float maxHealth = 3f;
     public float health;
     public float damage = 1f;
-    public float dashSpeed = 1f;
+    public float dashSpeed = 6f;
+    private float dashAcceleration = -2f;
     public float invinciblityFrame = .5f;
     public float regenDelay = 5f;
     private float lastImpactTime = -1f;
@@ -105,7 +106,6 @@ public class PlayerController : MonoBehaviour {
     void UpdateDashPosition(Vector2 joystickVect) {
         Vector3 pos = transform.position;
         float maxPos = 2.4f;
-        float step = dashSpeed*Time.deltaTime;
         dashing = true;
 
         if (joystickVect.x > 0) { //go right
@@ -119,6 +119,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
+        dashAcceleration = -2f; //reboot dash acceleration
         //transform.position = pos;
     }
 
@@ -128,7 +129,9 @@ public class PlayerController : MonoBehaviour {
     void DashTowardsTarget() {
         if (transform.position.x != targetPos.x) {
             targetPos = new Vector3(targetPos.x, transform.position.y, transform.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, dashSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, (dashSpeed+dashAcceleration) * Time.deltaTime);
+            dashAcceleration += 0.4f;
+            Debug.Log(dashAcceleration);
         }
         else {
             dashing = false;

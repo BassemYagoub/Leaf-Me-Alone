@@ -367,12 +367,16 @@ public class GameManager : MonoBehaviour {
         totalEnemiesGenerated += nbEnemies;
         totalObstaclesGenerated += nbObstacles;
 
+        //random value to offset x axis for obstacles & enemies so that can player can see them from afar
+        float randomPositionOffset = 0f;
+
         //generate enemies
         for (int i = 0; i < nbEnemies; i++) {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(0,0.15f,0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
+            randomPositionOffset = Random.Range(-0.2f, 0.2f);
+            newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f,0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
             newObj.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
             newObj.name = newObj.name + " " + (i + 1);
             enemies.Add(newObj);
@@ -384,7 +388,8 @@ public class GameManager : MonoBehaviour {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(0, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
+            randomPositionOffset = Random.Range(-0.2f, 0.2f);
+            newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
             newObj.name = newObj.name + " " + (i + 1);
             obstacles.Add(newObj);
         }
