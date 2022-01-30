@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour {
     [Header("Background trees for decoration")]
     public GameObject decorationTreesPrefab;
     public GameObject forestParent; //parent of decoration trees
-    public int decorationTreesDensity; //nb of decoration trees to instantiate //4
+    //public int decorationTreesDensity; //nb of decoration trees to instantiate //4
     private float distanceBetweenDecorationTrees = 3;
     private List<GameObject> decorationTrees;
 
@@ -90,30 +90,30 @@ public class GameManager : MonoBehaviour {
         "level_very_hard"
     };
 
-    private int currentLevel;
+    private int indexLevelDone;
+    private int cptTreelinesPassed;
+    private int nbTreelinesBeforeNextLevel;
 
     // Start is called before the first frame update
     void Start() {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
-
+        cptTreelinesPassed = 0;
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
-            currentLevel = 0;
             playerProfile = new GameResult();
+            playerProfile.playerLevel = 0;
+            indexLevelDone = -1;
         }
         else { //playing phase
             string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile"+ PlayerPrefs.GetInt("player_profile") + ".json");
             playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
+            indexLevelDone = getCurrentLevel() - 1;
         }
         playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
-        currentLevel = (int)playerProfile.playerLevel / 20;
-        readGameLevel(levels[currentLevel]);
-
-        //enemies
-        //nbEnemiesMin = 5;
-        //nbEnemiesMax = 10;
-        //nbEnemiesMaxByTreeline = 2;
-
+        //currentLevel = getCurrentLevel();
+        readGameLevel(levels[getCurrentLevel()]);
+        nbTreelinesBeforeNextLevel = treelineDensity + 2; // + 2 = nb treelines already in scene
+        Debug.Log("nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
         nbEnemiesGenerated = 0;
         totalEnemiesGenerated = 0;
         totalEnemiesBeaten = 0;
@@ -123,11 +123,6 @@ public class GameManager : MonoBehaviour {
         foreach (Transform child in enemiesParent.transform) {
             enemies.Add(child.gameObject);
         }
-        
-        //obstacles
-        //nbObstaclesMin = 5;
-        //nbObstaclesMax = 10;
-        //nbObstaclesMaxByTreeline = 2;
 
         nbObstaclesGenerated = 0;
         totalObstaclesGenerated = 0;
@@ -152,7 +147,7 @@ public class GameManager : MonoBehaviour {
         foreach (Transform child in forestParent.transform) {
             decorationTrees.Add(child.gameObject);
         }
-        decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
+        decorationTrees = GenerateTrees((int)(treelineDensity * 1.5f), distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
     }
 
     // Update is called once per frame
@@ -169,8 +164,8 @@ public class GameManager : MonoBehaviour {
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < nbTreesOnScreen) {
 
-                if (currentLevel < levels.Count) {
-                    currentLevel++;
+                if (getCurrentLevel() < levels.Count) {
+                    //currentLevel++;
                     if (playerProfile.playerLevel < 100) {
                         playerProfile.playerLevel += 20;
                     }
@@ -178,11 +173,30 @@ public class GameManager : MonoBehaviour {
                 UpdateGameResults();
                 LevelGeneration();
             }
-            else {
-                treelines = DestroyFromList(treelines);
-                decorationTrees = DestroyFromList(decorationTrees);
-                DestroyEnemiesAndObstacles();
+            
+            int tmp = treelines.Count;
+            treelines = DestroyFromList(treelines);
+            decorationTrees = DestroyFromList(decorationTrees);
+            DestroyEnemiesAndObstacles();
+
+            //count nb treelines passed
+            cptTreelinesPassed += tmp - treelines.Count;
+            if(tmp - treelines.Count != 0)
+                Debug.Log("nb trees = " + cptTreelinesPassed);
+            if(cptTreelinesPassed >= nbTreelinesBeforeNextLevel) { //level finished
+                cptTreelinesPassed = nbTreelinesBeforeNextLevel - cptTreelinesPassed;
+                Debug.Log("nb trees-- = " + cptTreelinesPassed);
+                //next level if not last level
+                if(indexLevelDone < levels.Count - 1) {
+                    indexLevelDone++; //level finished
+                    if(indexLevelDone < levels.Count - 1) //next level if it exists
+                        nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone+1); 
+                    Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
+                    Debug.Log("indexLevelDone = " + levels[indexLevelDone]);
+                }
             }
+            
+            
 
             UpdateTimer();
             playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
@@ -211,14 +225,11 @@ public class GameManager : MonoBehaviour {
     List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
         Vector3 newPos;
         GameObject lastAddedTree = trees[trees.Count-1];
-        Debug.Log(trees.Count);
         lastAddedTree = trees[trees.Count - 1];
         
         bool isTreeLine = false;
         if (parent.name.Equals("Trees"))
             isTreeLine = true;
-        else
-            Debug.Log("decoration trees " + density);
 
         for (int i = 0; i < density; i++) {
             newPos = new Vector3(lastAddedTree.transform.position.x,
@@ -380,16 +391,23 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    private int getCurrentLevel() {
+        if (playerProfile.playerLevel / 20 < levels.Count)
+            return playerProfile.playerLevel / 20;
+        else
+            return levels.Count - 1;
+    }
+
     /// <summary>
     /// level generation on update after calibration phase
     /// </summary>
     private void LevelGeneration() {
         //TO DO : UpdateDifficulty
-        Debug.Log("levelgeneration ---");
-        Debug.Log("playerLevel " + playerProfile.playerLevel);
-        Debug.Log("lvl " + (int)playerProfile.playerLevel / 20);
+        //Debug.Log("levelgeneration ---");
+        //Debug.Log("playerLevel " + playerProfile.playerLevel);
+        //Debug.Log("lvl " + getCurrentLevel());
 
-        readGameLevel(levels[(int)playerProfile.playerLevel / 20]);
+        readGameLevel(levels[getCurrentLevel()]);
         //update values to generate
         nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax + 1);
         nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax + 1);
@@ -398,7 +416,7 @@ public class GameManager : MonoBehaviour {
 
         nbObstaclesGenerated = 0;
         treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
-        decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
+        decorationTrees = GenerateTrees((int)(treelineDensity*1.5f), distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
     }
 
     private void UpdateDifficulty() {
@@ -537,16 +555,16 @@ public class GameManager : MonoBehaviour {
         menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
         menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
 
-        if (currentLevel > 0 && currentLevel < levels.Count) {
-            playerProfile.playerLevel -= 20;
-        }
+        //last level done
+        playerProfile.playerLevel = 20 * indexLevelDone;
+
         //TO DO : save player category & save game result
 
         ShowUnshowMenuPanel();
     }
 
     private void readGameLevel(string JSONfile) {
-        Debug.Log("niveau : " + JSONfile);
+        //Debug.Log("niveau : " + JSONfile);
         string jsonFile = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + JSONfile + ".json");
         GameLevel level = JsonUtility.FromJson<GameLevel>(jsonFile);
         //update game manager
@@ -578,4 +596,9 @@ public class GameManager : MonoBehaviour {
         enemyPrefab.GetComponent<EnemyController>().fireRate = level.enemyFireRate;
     }
 
+    private int getNbTreelinesBeforeNextLevel(int levelIndex) {
+        string jsonFile = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + levels[levelIndex] + ".json");
+        GameLevel level = JsonUtility.FromJson<GameLevel>(jsonFile);
+        return level.treelineDensity;
+    }
 }
