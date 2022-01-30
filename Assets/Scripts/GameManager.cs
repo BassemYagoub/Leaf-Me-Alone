@@ -508,6 +508,13 @@ public class GameManager : MonoBehaviour {
         SceneManager.LoadScene(1);
     }
 
+    /// <summary>
+    /// Changes scene to Title Screen
+    /// </summary>
+    public void GoToTitleScreen() {
+        SceneManager.LoadScene(0);
+    }
+
 
     /// <summary>
     /// Coroutine to resume game after a certain time after playing an animation to warn the player about it

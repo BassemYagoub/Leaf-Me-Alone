@@ -131,7 +131,6 @@ public class PlayerController : MonoBehaviour {
             targetPos = new Vector3(targetPos.x, transform.position.y, transform.position.z);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, (dashSpeed+dashAcceleration) * Time.deltaTime);
             dashAcceleration += 0.4f;
-            Debug.Log(dashAcceleration);
         }
         else {
             dashing = false;
