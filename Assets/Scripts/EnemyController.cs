@@ -6,10 +6,10 @@ public class EnemyController : MonoBehaviour {
     public float projectileSpeed;
     public float fireRate = 1f;
     private float nextTimeToFire = 0f;
+    private float fireRateRandomizer = 0f;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start(){
         
     }
 
@@ -32,7 +32,8 @@ public class EnemyController : MonoBehaviour {
     void AutomaticAttack() {
         //shoot projectile if not reloading
         if (Time.time >= nextTimeToFire && transform.tag == "Enemy") { //Obstacles cannot throw projectile
-            nextTimeToFire = Time.time + 1f / fireRate;
+            fireRateRandomizer = Random.Range(0, 0.5f);
+            nextTimeToFire = Time.time + fireRateRandomizer + 1f / fireRate;
             Vector3 firingPosition = new Vector3(transform.position.x, transform.position.y+0.3f, transform.position.z-0.4f);
             GameObject projectileObj = Instantiate(projectilePrefab, firingPosition, Quaternion.identity) as GameObject;
             projectileObj.GetComponent<Rigidbody>().velocity = (transform.rotation * Vector3.forward).normalized * projectileSpeed;

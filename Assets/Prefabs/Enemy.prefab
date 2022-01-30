@@ -1164,8 +1164,8 @@ MonoBehaviour:
   health: 1
   projectilePrefab: {fileID: 4530966579717592936, guid: 2c90b08af91f7ca41b3eba418be98fdc,
     type: 3}
-  projectileSpeed: 2
-  fireRate: 0.5
+  projectileSpeed: 4
+  fireRate: 1
 --- !u!114 &8014310640367758030
 MonoBehaviour:
   m_ObjectHideFlags: 0

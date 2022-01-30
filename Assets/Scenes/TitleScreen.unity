@@ -550,8 +550,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -139.56}
-  m_SizeDelta: {x: 215, y: 70}
+  m_AnchoredPosition: {x: 0, y: -90}
+  m_SizeDelta: {x: 230, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &444273339
 MonoBehaviour:
@@ -3128,6 +3128,7 @@ MonoBehaviour:
   moveReference: {fileID: 3022264635704383332, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
   nbLivesUI: {fileID: 0}
+  feedbackText: {fileID: 0}
   throwProjectileReference: {fileID: 89541399177356864, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
   leftHandOrigin: {fileID: 4325804174556623701}
@@ -4848,8 +4849,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -50}
-  m_SizeDelta: {x: 215, y: 70}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 230, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4325804174415338836
 CanvasRenderer:
