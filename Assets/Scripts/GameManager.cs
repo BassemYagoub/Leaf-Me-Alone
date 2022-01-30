@@ -164,12 +164,12 @@ public class GameManager : MonoBehaviour {
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < nbTreesOnScreen) {
 
-                if (getCurrentLevel() < levels.Count) {
-                    //currentLevel++;
-                    if (playerProfile.playerLevel < 100) {
-                        playerProfile.playerLevel += 20;
-                    }
-                }
+                //if (getCurrentLevel() < levels.Count) {
+                //    //currentLevel++;
+                //    if (playerProfile.playerLevel < 100) {
+                //        playerProfile.playerLevel += 20;
+                //    }
+                //}
                 UpdateGameResults();
                 LevelGeneration();
             }
@@ -189,7 +189,8 @@ public class GameManager : MonoBehaviour {
                 //next level if not last level
                 if(indexLevelDone < levels.Count - 1) {
                     indexLevelDone++; //level finished
-                    if(indexLevelDone < levels.Count - 1) //next level if it exists
+                    playerProfile.playerLevel += 20;
+                    if (indexLevelDone < levels.Count - 1) //next level if it exists
                         nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone+1); 
                     Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
                     Debug.Log("indexLevelDone = " + levels[indexLevelDone]);
