@@ -7,7 +7,6 @@ using System.IO;
 [Serializable]
 public class GameTraces
 {
-    public System.DateTime dateOfPlay;
     public float leftTriggerPressure;
     public Vector3 leftTargetPosition;
     public Vector3 rightControllerPosition;

@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour {
     private bool currentlyResumingGame = false;
     private float timeforResumingGame = 1.5f;
     public enum playerCategory { VeryBad, Bad, Average, Good, VeryGood };
-    private float playerLevel;
+    GameResult playerProfile;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -99,16 +99,17 @@ public class GameManager : MonoBehaviour {
 
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
             currentLevel = 0;
-			playerLevel = 0;
-            readGameLevel(levels[currentLevel]);
-            currentLevel++;
+            playerProfile = new GameResult();
         }
-        else {
-            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + "player_profile"+ PlayerPrefs.GetInt("player_profile") + ".json");
-            GameResult playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
-            playerLevel = playerProfile.playerLevel;
-            readGameLevel(levels[(int)playerLevel/20]);
-        }        //enemies
+        else { //playing phase
+            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile"+ PlayerPrefs.GetInt("player_profile") + ".json");
+            playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
+        }
+        playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
+        currentLevel = (int)playerProfile.playerLevel / 20;
+        readGameLevel(levels[currentLevel]);
+
+        //enemies
         //nbEnemiesMin = 5;
         //nbEnemiesMax = 10;
         //nbEnemiesMaxByTreeline = 2;
@@ -167,67 +168,47 @@ public class GameManager : MonoBehaviour {
 
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < nbTreesOnScreen) {
-                if(currentLevel < levels.Count) {
-                    readGameLevel(levels[currentLevel]);
-                    currentLevel++;
-                    playerLevel += 20;
-                    //update values to generate
-                    nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
-                    nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
-                    Debug.Log("nbObstaclesToGenerate : " + nbObstaclesToGenerate);
-                    Debug.Log("nbEnemiesToGenerate : " + nbEnemiesToGenerate);
 
-                    nbObstaclesGenerated = 0;
-                    treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
+                if (currentLevel < levels.Count) {
+                    currentLevel++;
+                    if (playerProfile.playerLevel < 100) {
+                        playerProfile.playerLevel += 20;
+                    }
                 }
-                else {
-                    LevelGeneration();
-                }
+                UpdateGameResults();
+                LevelGeneration();
             }
             else {
                 treelines = DestroyFromList(treelines);
-                DestroyEnemiesAndObstacles();
-            }
-
-            //Generate or destroy decoration trees
-            if (decorationTrees.Count < nbTreesOnScreen) {
-                decorationTrees = GenerateTrees(decorationTreesDensity, distanceBetweenDecorationTrees, forestParent, decorationTrees, decorationTreesPrefab);
-            }
-            else {
                 decorationTrees = DestroyFromList(decorationTrees);
+                DestroyEnemiesAndObstacles();
             }
 
             UpdateTimer();
             playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
         }
-        //game paused
-        else if (playerController.health > 0 && gamePaused && !currentlyResumingGame) { 
-            if (displayMenuReference.action.triggered) {
-                ResumeGame();
-            }
+        //resume game when paused
+        else if (gamePaused && displayMenuReference.action.triggered && playerController.health > 0 && !currentlyResumingGame) { 
+            ResumeGame();
         }
         //game ended
         else if (playerController.health <= 0 && !gamePaused) {
             GameOver();
-            if (currentLevel > 0 && currentLevel < levels.Count) {
-                playerLevel -= 20;
-            }
-            //TO DO : save player category & save game result
         }
 
     }
 
-        /// <summary>
-        /// generate trees
-        /// </summary>
-        /// <param name="density">nb to generate</param>
-        /// <param name="distanceBetweenTrees">distance that seperate trees</param>
-        /// <param name="parent">parent gameobject</param>
-        /// <param name="trees">list of trees</param>
-        /// <param name="treePrefab">tree prefab</param>
-        /// <param name="spawnObjectsAfterXTreelines">spawn enemies/obstacles after x treelines created</param>
-        /// <returns></returns>
-        List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
+    /// <summary>
+    /// generate trees
+    /// </summary>
+    /// <param name="density">nb to generate</param>
+    /// <param name="distanceBetweenTrees">distance that seperate trees</param>
+    /// <param name="parent">parent gameobject</param>
+    /// <param name="trees">list of trees</param>
+    /// <param name="treePrefab">tree prefab</param>
+    /// <param name="spawnObjectsAfterXTreelines">spawn enemies/obstacles after x treelines created</param>
+    /// <returns></returns>
+    List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
         Vector3 newPos;
         GameObject lastAddedTree = trees[trees.Count-1];
         Debug.Log(trees.Count);
@@ -405,10 +386,10 @@ public class GameManager : MonoBehaviour {
     private void LevelGeneration() {
         //TO DO : UpdateDifficulty
         Debug.Log("levelgeneration ---");
-        Debug.Log("playerLevel " + playerLevel);
-        Debug.Log("lvl " + (int)playerLevel/20);
+        Debug.Log("playerLevel " + playerProfile.playerLevel);
+        Debug.Log("lvl " + (int)playerProfile.playerLevel / 20);
 
-        readGameLevel(levels[(int)playerLevel/20]);
+        readGameLevel(levels[(int)playerProfile.playerLevel / 20]);
         //update values to generate
         nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax + 1);
         nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax + 1);
@@ -427,6 +408,12 @@ public class GameManager : MonoBehaviour {
 
     private void UpdateEnemiesType(GameObject enemy, Collider collider) {
         //TO DO
+    }
+
+    void UpdateGameResults() {
+        PlayerPrefs.SetInt("player_profile", 0);
+        string gameResults = JsonUtility.ToJson(playerProfile);
+        File.WriteAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json", gameResults);
     }
 
     /// <summary>
@@ -498,12 +485,6 @@ public class GameManager : MonoBehaviour {
         SceneManager.LoadScene(1);
     }
 
-    void PauseGame() {
-        gamePaused = true;
-        playerController.PauseUnpauseGame();
-        ShowUnshowMenuPanel();
-        Time.timeScale = 0;
-    }
 
     /// <summary>
     /// Coroutine to resume game after a certain time after playing an animation to warn the player about it
@@ -511,7 +492,6 @@ public class GameManager : MonoBehaviour {
     /// <param name="seconds">the number of seconds after which the game will resume</param>
     /// <returns></returns>
     public IEnumerator ResumeGameAfter(float seconds) {
-        Debug.Log("resumeAfter");
         ResumeGameNotification.SetActive(true);
         ResumeGameNotification.GetComponent<Animator>().SetTrigger("ResumeGame");
         currentlyResumingGame = true;
@@ -523,6 +503,15 @@ public class GameManager : MonoBehaviour {
         Time.timeScale = 1;
     }
 
+    /// <summary>
+    /// Pauses game and shows menu
+    /// </summary>
+    void PauseGame() {
+        gamePaused = true;
+        playerController.PauseUnpauseGame();
+        ShowUnshowMenuPanel();
+        Time.timeScale = 0;
+    }
     /// <summary>
     /// Resumes the game after changing the needed elements
     /// </summary>
@@ -547,6 +536,12 @@ public class GameManager : MonoBehaviour {
         menuPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "GAME OVER";
         menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
         menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
+
+        if (currentLevel > 0 && currentLevel < levels.Count) {
+            playerProfile.playerLevel -= 20;
+        }
+        //TO DO : save player category & save game result
+
         ShowUnshowMenuPanel();
     }
 

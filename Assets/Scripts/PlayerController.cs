@@ -150,7 +150,7 @@ public class PlayerController : MonoBehaviour {
     private void OnCollisionEnter(Collision collision) {
         Debug.Log("collision with "+ collision.gameObject.name);
         if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Obstacle" || collision.gameObject.tag == "Fireball") {
-            UpdateFeedbackText(collision);
+            UpdateFeedbackTextAfterCollision(collision);
             TakeDamage(1f);
         }
     }
@@ -165,9 +165,9 @@ public class PlayerController : MonoBehaviour {
     /// <summary>
     /// Updates feedback text in Menu Panel (after taking a hit)
     /// </summary>
-    void UpdateFeedbackText(Collision collision) {
+    void UpdateFeedbackTextAfterCollision(Collision collision) {
         if (collision.gameObject.tag == "Fireball") {
-            feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : You can deflect projectiles with your katana.";
+            feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : You can deflect projectiles with your katana and shurikens.";
         }
         if (collision.gameObject.tag == "Obstacle") {
             feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : Obstacles can be destroyed with your katana.";

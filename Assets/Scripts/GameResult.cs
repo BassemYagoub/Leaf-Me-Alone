@@ -8,6 +8,8 @@ using System.IO;
 public class GameResult
 {
     public float timePlayed;
+    public long dateOfPlay;
+    public int playerLevel;
     public int nbEnemies;
     public int nbEnemiesBeaten;
     public int nbObstacles;
@@ -16,7 +18,6 @@ public class GameResult
     public int nbVerticalEnemiesBeaten;
     public int nbHorizontalEnemies;
     public int nbHorizontalEnemiesBeaten;
-    public int playerLevel;
 
     //public GameResult importGameResult(string JSONfile) {
     //    return JsonUtility.FromJson<GameResult>(JSONfile);

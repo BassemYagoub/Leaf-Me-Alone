@@ -22,8 +22,8 @@ public class ProjectileController : MonoBehaviour {
         if(throwerTag == "Player") {
             if (collision.gameObject.tag != "Shuriken" && collision.gameObject.tag != "Player" && collision.gameObject.tag == "Enemy") {
                 collision.gameObject.GetComponent<EnemyController>().TakeDamage(damage);
+                Destroy(gameObject);
             }
-            Destroy(gameObject);
             
         }else if(throwerTag == "Enemy") {
             if (collision.gameObject.tag == "Player") {
