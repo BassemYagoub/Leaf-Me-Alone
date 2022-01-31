@@ -19,13 +19,30 @@ public class GameResult
     public int nbHorizontalEnemies;
     public int nbHorizontalEnemiesBeaten;
 
-    //public GameResult importGameResult(string JSONfile) {
-    //    return JsonUtility.FromJson<GameResult>(JSONfile);
-    //}
+    //katana pos/rotation
+    Vector3 initialPosKatana = new Vector3(-1000, -1000, -1000);
+    Quaternion initialRotationKatana = new Quaternion(-1000, -1000, -1000, -1000);
+    float posDiff = -1;
+    float rotDiff = -1;
+    float posKatanaThreshold = 5f;
+    float rotKatanaThreshold = 5f;
+    public float verificationTime = 2f;
 
-    //public void saveGameResult() {
-    //    string json = JsonUtility.ToJson(this);
-    //    File.WriteAllText(@"D:\path.json", json);
-    //}
+    public void IsPlayerMovingKatanaEnough(Vector3 posKatana, Quaternion rotationKatana) {
+        if (Vector3.Distance(initialPosKatana, new Vector3(-1000, -1000, -1000)) == 0) {
+            initialPosKatana = posKatana;
+            initialRotationKatana = rotationKatana;
+        }
+        else {
+            posDiff = Vector3.Distance(initialPosKatana, posKatana);
+            rotDiff = 1 - Mathf.Abs(Quaternion.Dot(initialRotationKatana, rotationKatana));
+            Debug.Log("posdiff: "+posDiff);
+            Debug.Log("rotdiff: " + rotDiff);
+            if (posDiff < posKatanaThreshold || rotDiff < rotKatanaThreshold) {
+                //TurnEnemiesTowardsPlayer();
+            }
+        }
+
+    }
 
 }
