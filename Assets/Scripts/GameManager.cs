@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour {
     private float distanceBetweenTreelines = 4;
     private List<GameObject> treelines;
     private int nbTreesOnScreen = 10;
+    private float enemiesSpawnRange = 0.3f; //range of random for spawn position
 
     [Header("UI Elements")]
     public GameObject menuPanel;
@@ -72,6 +73,7 @@ public class GameManager : MonoBehaviour {
 
     [Header("Traces and indicators")]
     private float katanaPosVerificationTime;
+    private bool katanaMovingEnough = false;
 
     //calibration phase
     private List<string> levels = new List<string> {
@@ -111,14 +113,12 @@ public class GameManager : MonoBehaviour {
         Debug.Log("nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
 
         nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
-
         enemies = new List<GameObject>();
         foreach (Transform child in enemiesParent.transform) {
             enemies.Add(child.gameObject);
         }
 
         nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
-
         obstacles = new List<GameObject>();
         foreach (Transform child in obstaclesParent.transform) {
             obstacles.Add(child.gameObject);
@@ -131,6 +131,10 @@ public class GameManager : MonoBehaviour {
         }
         //wait for 2 treelines before spawning enemies/obstacles
         treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab, 2);
+
+
+        katanaPosVerificationTime = Time.time; 
+        playerController.UpdateKatanaTraces(player.transform.InverseTransformPoint(player.transform.Find("Camera Offset/RightHand Controller").transform.position), player.transform.Find("Camera Offset/RightHand Controller").transform.rotation);
     }
 
     // Update is called once per frame
@@ -139,9 +143,12 @@ public class GameManager : MonoBehaviour {
         if (playerController.health > 0 && !gamePaused) {
             AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
 
-            if(katanaPosVerificationTime < Time.time + playerProfile.verificationTime) {
-                playerProfile.IsPlayerMovingKatanaEnough(player.transform.Find("Camera Offset/RightHand Controller").transform.position, player.transform.Find("Camera Offset/RightHand Controller").transform.rotation);
+            if(Time.time > katanaPosVerificationTime + playerController.verificationTimeStep) {
+                katanaMovingEnough = playerController.IsPlayerMovingKatanaEnough(player.transform.InverseTransformPoint(player.transform.Find("Camera Offset/RightHand Controller").transform.position), player.transform.Find("Camera Offset/RightHand Controller").transform.rotation);
+                katanaPosVerificationTime = Time.time;
             }
+
+            UpdateDifficulty();
 
             //pause game by clicking on left hand button menu
             if (displayMenuReference.action.triggered) {
@@ -355,7 +362,7 @@ public class GameManager : MonoBehaviour {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            randomPositionOffset = Random.Range(-0.3f, 0.3f);
+            randomPositionOffset = Random.Range((-1)*enemiesSpawnRange, enemiesSpawnRange);
             newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
             newObj.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
             newObj.name = newObj.name + " " + (i + 1);
@@ -368,7 +375,7 @@ public class GameManager : MonoBehaviour {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            randomPositionOffset = Random.Range(-0.3f, 0.3f);
+            randomPositionOffset = Random.Range((-1)*enemiesSpawnRange, enemiesSpawnRange);
             newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
             newObj.name = newObj.name + " " + (i + 1);
             obstacles.Add(newObj);
@@ -406,6 +413,26 @@ public class GameManager : MonoBehaviour {
     private void UpdateDifficulty() {
         //TO DO
         ////UpdateEnemiesType
+        
+        //if player does not move katana => force him to do it by making enemies looking at him
+        //and increasing the spawn range of obstacles and enemies
+        if (!katanaMovingEnough) {
+            foreach (GameObject enemy in enemies) {
+                if (enemy != null) {
+                    if (Random.Range(0, 10) == 0) {
+                        enemy.transform.LookAt(player.transform);
+                        enemy.transform.rotation = new Quaternion(0, enemy.transform.rotation.y, 0, enemy.transform.rotation.w);
+                    }
+                }
+            }
+            if (enemiesSpawnRange < 0.6f) {
+                enemiesSpawnRange += 0.05f;
+            }
+        }
+        else if (enemiesSpawnRange > 0.3f) {
+            enemiesSpawnRange -= 0.05f;
+        }
+
     }
 
     private void UpdateEnemiesType(GameObject enemy, Collider collider) {

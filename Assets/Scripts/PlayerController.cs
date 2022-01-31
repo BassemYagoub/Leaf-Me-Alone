@@ -40,6 +40,13 @@ public class PlayerController : MonoBehaviour {
 
     public GameObject rightHand;
 
+    //right hand traces (katana pos/rotation)
+    private Vector3 initialPosKatana = new Vector3(-1000, -1000, -1000);
+    private Quaternion initialRotationKatana = new Quaternion(-1000, -1000, -1000, -1000);
+    private float posDiff = -1;
+    private float rotDiff = -1;
+    private float movementThreshold = 0.3f;
+    public float verificationTimeStep = 1f;
 
 
     void Start() {
@@ -182,6 +189,27 @@ public class PlayerController : MonoBehaviour {
                 feedbackText.GetComponent<TextMeshProUGUI>().text = "Tip : Avoid bumping into enemies by slicing them or throwing shuriken at them.";
             }
         }
+    }
+
+    public void UpdateKatanaTraces(Vector3 posKatana, Quaternion rotationKatana) {
+        initialPosKatana = posKatana;
+        initialRotationKatana = rotationKatana;
+    }
+
+    public bool IsPlayerMovingKatanaEnough(Vector3 posKatana, Quaternion rotationKatana) {
+        posDiff = Vector3.Distance(initialPosKatana, posKatana);
+        rotDiff = 1 - Mathf.Abs(Quaternion.Dot(initialRotationKatana, rotationKatana));
+
+        if (posDiff + rotDiff < movementThreshold) {
+            return false;
+        }
+
+        //update values
+        initialPosKatana = posKatana;
+        initialRotationKatana = rotationKatana;
+
+        return true;
+
     }
 
     /// <summary>

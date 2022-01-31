@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   throwerTag: Enemy
-  projectileDuration: 0.7
+  projectileDuration: 0.45
 --- !u!1 &4530966580073918059
 GameObject:
   m_ObjectHideFlags: 0
