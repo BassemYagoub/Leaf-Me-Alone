@@ -93,7 +93,6 @@ public class GameManager : MonoBehaviour {
     void Start() {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
-
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
             playerProfile = new GameResult();
             playerProfile.playerLevel = 0;
@@ -107,6 +106,15 @@ public class GameManager : MonoBehaviour {
         playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
 
         readGameLevel(levels[getCurrentLevel()]);
+
+        //// load last level & mark level as level not done (points removed)
+        //if(playerProfile.playerLevel > 20) {
+        //    indexLevelDone -= 1;
+        //    playerProfile.playerLevel -= 20;
+        //}
+        
+        Debug.Log("level loaded : " + levels[getCurrentLevel()]);
+
         nbTreelinesBeforeNextLevel = treelineDensity + 2; // + 2 = nb treelines already in scene
         Debug.Log("nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
 
@@ -168,7 +176,10 @@ public class GameManager : MonoBehaviour {
                 //next level if not last level
                 if(indexLevelDone < levels.Count - 1) {
                     indexLevelDone++; //level finished
-                    playerProfile.playerLevel += 20;
+                    if(indexLevelDone > 2) { //add points if level finished is not a tutorial (index is not 0,1,2)
+                        playerProfile.playerLevel += 20;
+                        Debug.Log("+20 -> " + playerProfile.playerLevel);
+                    }
                     if (indexLevelDone < levels.Count - 1) //next level if it exists
                         nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone+1); 
                     Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
@@ -188,6 +199,7 @@ public class GameManager : MonoBehaviour {
         //game ended
         else if (playerController.health <= 0 && !gamePaused) {
             GameOver();
+            UpdateGameResults();
         }
 
     }
@@ -376,11 +388,29 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// return 
+    /// </summary>
+    /// <returns></returns>
     private int getCurrentLevel() {
-        if (playerProfile.playerLevel / 20 < levels.Count)
-            return playerProfile.playerLevel / 20;
-        else
-            return levels.Count - 1;
+        switch (playerProfile.playerLevel) {
+            case 20:
+                return 3; //very easy, levels[3] 
+            case 40:
+                return 4; //easy
+            case 60:
+                return 5; //medium
+            case 80:
+                return 6; //hard
+            case 100:
+                return 7; //very hard
+            default:
+                return 7; //max level
+        }
+        //if (playerProfile.playerLevel / 20 + 3 < levels.Count)
+        //    return playerProfile.playerLevel / 20 + 3; //+ 3 = levels[0,1,2] are tutorial parts
+        //else
+        //    return levels.Count - 1;
     }
 
     /// <summary>
@@ -412,6 +442,9 @@ public class GameManager : MonoBehaviour {
         //TO DO
     }
 
+    /// <summary>
+    /// save player profile in JSON file
+    /// </summary>
     void UpdateGameResults() {
         PlayerPrefs.SetInt("player_profile", 0);
         string gameResults = JsonUtility.ToJson(playerProfile);
@@ -467,6 +500,9 @@ public class GameManager : MonoBehaviour {
         canvasTimer.transform.position = new Vector3(canvasTimer.transform.position.x, canvasTimer.transform.position.y, canvasTimer.transform.position.z + playerAutomaticMovingSpeed);
     }
 
+    /// <summary>
+    /// hide/show menu panel
+    /// </summary>
     void ShowUnshowMenuPanel() {
         menuPanel.SetActive(!menuPanel.activeSelf);
     }
@@ -546,14 +582,26 @@ public class GameManager : MonoBehaviour {
         menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
         menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
 
-        //last level done
-        playerProfile.playerLevel = 20 * indexLevelDone;
+        //return to previous level
+        //if (indexLevelDone > 2) {
+        //    indexLevelDone -= 1;
+        //}
+
+        Debug.Log("avant " + playerProfile.playerLevel + " " + levels[getCurrentLevel()]);
+        playerProfile.playerLevel -= 20;
+        //playerProfile.playerLevel = 20 * indexLevelDone;
+        //Debug.Log("indexleveldone : " + indexLevelDone);
+        Debug.Log("après : " + playerProfile.playerLevel + " " + levels[getCurrentLevel()]);
 
         //TO DO : save player category & save game result
 
         ShowUnshowMenuPanel();
     }
 
+    /// <summary>
+    /// read JSON file level and set values
+    /// </summary>
+    /// <param name="JSONfile"></param>
     private void readGameLevel(string JSONfile) {
         //Debug.Log("niveau : " + JSONfile);
         string jsonFile = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + JSONfile + ".json");
@@ -587,6 +635,11 @@ public class GameManager : MonoBehaviour {
         enemyPrefab.GetComponent<EnemyController>().fireRate = level.enemyFireRate;
     }
 
+    /// <summary>
+    /// return number of treelines to pass before winning level
+    /// </summary>
+    /// <param name="levelIndex">level to win</param>
+    /// <returns></returns>
     private int getNbTreelinesBeforeNextLevel(int levelIndex) {
         string jsonFile = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Levels" + Path.DirectorySeparatorChar + levels[levelIndex] + ".json");
         GameLevel level = JsonUtility.FromJson<GameLevel>(jsonFile);
