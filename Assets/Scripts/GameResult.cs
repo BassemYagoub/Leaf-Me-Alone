@@ -10,6 +10,8 @@ public class GameResult
     public float timePlayed;
     public long dateOfPlay;
     public int playerLevel;
+    public float nbShurikenThrown = 1;
+    public float nbShurikenAimed;
     public int nbEnemies;
     public int nbEnemiesBeaten;
     public int nbObstacles;

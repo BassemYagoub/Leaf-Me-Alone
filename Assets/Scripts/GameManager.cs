@@ -31,7 +31,6 @@ public class GameManager : MonoBehaviour {
     private float distanceBetweenTreelines = 4;
     private List<GameObject> treelines;
     private int nbTreesOnScreen = 10;
-    private float enemiesSpawnRange = 0.3f; //range of random for spawn position
 
     [Header("UI Elements")]
     public GameObject menuPanel;
@@ -56,6 +55,8 @@ public class GameManager : MonoBehaviour {
     private float verticalEnemiesPerc;
     private float horizontalEnemiesPerc;
     private int totalEnemiesGenerated;
+    private float enemiesSpawnRange = 0.3f; //range of random for spawn position
+    private float enemiesPrefabDimensions = 0.6f;
     private int totalEnemiesBeaten;
 
     [Header("Obstacles")]
@@ -115,6 +116,7 @@ public class GameManager : MonoBehaviour {
             lastTimePlayed = playerProfile.timePlayed;
         }
         playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
+        playerController.playerProfile = playerProfile;
 
         readGameLevel(levels[getCurrentLevel()]);
 
@@ -389,7 +391,7 @@ public class GameManager : MonoBehaviour {
             slot = treeline.transform.Find(rand_branch).gameObject;
             randomPositionOffset = Random.Range((-1)*enemiesSpawnRange, enemiesSpawnRange);
             newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
-            newObj.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+            newObj.transform.localScale = new Vector3(enemiesPrefabDimensions, enemiesPrefabDimensions, enemiesPrefabDimensions);
             newObj.name = newObj.name + " " + (i + 1);
             enemies.Add(newObj);
         }
@@ -475,6 +477,16 @@ public class GameManager : MonoBehaviour {
             enemiesSpawnRange -= 0.05f;
         }
 
+        //if player accuracy is good => enemies become smaller
+        //else, they become bigger
+        float shurikenAccuracy = playerProfile.nbShurikenAimed / playerProfile.nbShurikenThrown;
+
+        if (shurikenAccuracy > 0.5f && enemiesPrefabDimensions > 0.45f) {
+            enemiesPrefabDimensions = Mathf.Max(0.45f, 1-shurikenAccuracy);
+        }
+        else if (shurikenAccuracy < 0.5f && enemiesPrefabDimensions < 0.75f) {
+            enemiesPrefabDimensions = Mathf.Min(0.75f, 1 - shurikenAccuracy);
+        }
     }
 
     private void UpdateEnemiesType(GameObject enemy, Collider collider) {
