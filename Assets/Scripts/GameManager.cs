@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour {
     private float verticalEnemiesPerc;
     private float horizontalEnemiesPerc;
     private int totalEnemiesGenerated;
+    private int totalEnemiesBeaten;
 
     [Header("Obstacles")]
     public GameObject obstaclePrefab;
@@ -69,6 +70,7 @@ public class GameManager : MonoBehaviour {
     private float obstacleMaxDamage;
     private int nbObstaclesMaxByTreeline;
     private int totalObstaclesGenerated;
+    private int totalObstaclesBeaten;
 
 
     [Header("Traces and indicators")]
@@ -90,20 +92,27 @@ public class GameManager : MonoBehaviour {
     private int indexLevelDone;
     private int cptTreelinesPassed;
     private int nbTreelinesBeforeNextLevel;
+    private bool calibrationPhase;
+    private float lastTimePlayed;
 
     // Start is called before the first frame update
     void Start() {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
+
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
             playerProfile = new GameResult();
             playerProfile.playerLevel = 0;
             indexLevelDone = -1;
-        }
+            calibrationPhase = true;
+        }    
         else { //playing phase
-            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile"+ PlayerPrefs.GetInt("player_profile") + ".json");
+            Debug.Log("adaptation");
+            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
             playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
             indexLevelDone = getCurrentLevel() - 1;
+            calibrationPhase = false;
+            lastTimePlayed = playerProfile.timePlayed;
         }
         playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
 
@@ -291,12 +300,14 @@ public class GameManager : MonoBehaviour {
         foreach (GameObject enemy in enemies) {
             if(enemy == null) {
                 enemiesToRemove.Add(enemy);
-                playerProfile.nbEnemiesBeaten += 1;
+                totalEnemiesBeaten += 1;
+                //playerProfile.nbEnemiesBeaten += 1;
             }
             else if (enemy.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
                 //Debug.Log(enemy.name);
                 enemiesToDestroy.Add(enemy);
-                playerProfile.nbEnemiesBeaten += 1;
+                totalEnemiesBeaten += 1;
+                //playerProfile.nbEnemiesBeaten += 1;
             }
 
         }
@@ -315,11 +326,13 @@ public class GameManager : MonoBehaviour {
         foreach (GameObject obstacle in obstacles) {
             if(obstacle == null) {
                 obstaclesToRemove.Add(obstacle);
-                playerProfile.nbObstaclesBeaten += 1;
+                totalObstaclesGenerated += 1;
+                //playerProfile.nbObstaclesBeaten += 1;
             }
             else if (obstacle.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
                 obstaclesToDestroy.Add(obstacle);
-                playerProfile.nbObstaclesBeaten += 1;
+                totalObstaclesGenerated += 1;
+                //playerProfile.nbObstaclesBeaten += 1;
             }
         }
         foreach (GameObject obstacle in obstaclesToDestroy) {
@@ -396,28 +409,27 @@ public class GameManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// return 
+    /// return index of current level
     /// </summary>
     /// <returns></returns>
     private int getCurrentLevel() {
         switch (playerProfile.playerLevel) {
-            case 20:
+            case 0:
+                return 0; //tutorial
+            case int n when (0 < n && n < 20):
                 return 3; //very easy, levels[3] 
-            case 40:
+            case int n when (20 < n && n < 40):
                 return 4; //easy
-            case 60:
+            case int n when (40 < n && n < 60):
                 return 5; //medium
-            case 80:
+            case int n when (60 < n && n < 80):
                 return 6; //hard
-            case 100:
+            case int n when (80 < n && n < 100):
                 return 7; //very hard
             default:
                 return 7; //max level
         }
-        //if (playerProfile.playerLevel / 20 + 3 < levels.Count)
-        //    return playerProfile.playerLevel / 20 + 3; //+ 3 = levels[0,1,2] are tutorial parts
-        //else
-        //    return levels.Count - 1;
+
     }
 
     /// <summary>
@@ -474,6 +486,11 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     void UpdateGameResults() {
         PlayerPrefs.SetInt("player_profile", 0);
+        playerProfile.timePlayed = seconds + 60 * minutes;
+        playerProfile.nbEnemies = totalEnemiesGenerated;
+        playerProfile.nbObstacles = totalObstaclesGenerated;
+        playerProfile.nbEnemiesBeaten = totalEnemiesBeaten;
+        playerProfile.nbObstaclesBeaten = totalObstaclesBeaten;
         string gameResults = JsonUtility.ToJson(playerProfile);
         File.WriteAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json", gameResults);
     }
@@ -609,18 +626,32 @@ public class GameManager : MonoBehaviour {
         menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
         menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
 
-        //return to previous level
-        //if (indexLevelDone > 2) {
-        //    indexLevelDone -= 1;
+        //calibration phase
+        //if (calibrationPhase) {
+            //return to previous level done
+            //if(playerProfile.playerLevel > 20)
+            //    playerProfile.playerLevel -= 20;
         //}
 
-        Debug.Log("avant " + playerProfile.playerLevel + " " + levels[getCurrentLevel()]);
-        playerProfile.playerLevel -= 20;
-        //playerProfile.playerLevel = 20 * indexLevelDone;
-        //Debug.Log("indexleveldone : " + indexLevelDone);
-        Debug.Log("après : " + playerProfile.playerLevel + " " + levels[getCurrentLevel()]);
+        //adaptation phase
+        if(!calibrationPhase){
 
-        //TO DO : save player category & save game result
+            int timePlayed = seconds + 60 * minutes;
+
+            Debug.Log("temps joué avant : " + lastTimePlayed);
+            Debug.Log("temps joué après : " + timePlayed);
+
+            //player lasted longer
+            if((timePlayed - lastTimePlayed) >= 0) {
+                playerProfile.playerLevel -= 1;
+            }
+
+            //player didn't last longer
+            else {
+                playerProfile.playerLevel -= 2;
+            }
+
+        }
 
         ShowUnshowMenuPanel();
     }

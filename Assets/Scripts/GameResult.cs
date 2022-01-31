@@ -14,9 +14,9 @@ public class GameResult
     public int nbEnemiesBeaten;
     public int nbObstacles;
     public int nbObstaclesBeaten;
-    public int nbVerticalEnemies;
-    public int nbVerticalEnemiesBeaten;
-    public int nbHorizontalEnemies;
-    public int nbHorizontalEnemiesBeaten;
+    //public int nbVerticalEnemies;
+    //public int nbVerticalEnemiesBeaten;
+    //public int nbHorizontalEnemies;
+    //public int nbHorizontalEnemiesBeaten;
 
 }
