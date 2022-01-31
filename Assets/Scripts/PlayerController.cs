@@ -48,6 +48,8 @@ public class PlayerController : MonoBehaviour {
     private float movementThreshold = 0.3f;
     public float verificationTimeStep = 1f;
 
+    public GameResult playerProfile;
+
 
     void Start() {
         health = maxHealth;
@@ -150,6 +152,16 @@ public class PlayerController : MonoBehaviour {
     public void ThrowProjectile() {
         GameObject projectileObj = Instantiate(projectilePrefab, leftHandOrigin.position, Quaternion.identity) as GameObject;
         projectileObj.GetComponent<Rigidbody>().velocity = ((leftHandOrigin.rotation * Vector3.forward)).normalized * projectileSpeed;
+
+        //check what player is aiming at with left hand
+        RaycastHit hit;
+        if (Physics.Raycast(leftHandOrigin.position, leftHandOrigin.transform.forward, out hit, 30)) {
+            if (hit.transform.tag == "Enemy" || hit.transform.tag == "Obstacle") {
+                playerProfile.nbShurikenAimed += 1;
+            }
+        }
+
+        playerProfile.nbShurikenThrown += 1;
     }
 
     /// <summary>
@@ -191,11 +203,22 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Updates left hand position and rotation
+    /// </summary>
+    /// <param name="posKatana">the right hand position</param>
+    /// <param name="rotationKatana">the right hand rotation</param>
     public void UpdateKatanaTraces(Vector3 posKatana, Quaternion rotationKatana) {
         initialPosKatana = posKatana;
         initialRotationKatana = rotationKatana;
     }
 
+    /// <summary>
+    /// Checks if player moves right hand enough according to a threshold
+    /// </summary>
+    /// <param name="posKatana">the right hand position</param>
+    /// <param name="rotationKatana">the right hand rotation</param>
+    /// <returns>boolean characterizing if the player moving enough</returns>
     public bool IsPlayerMovingKatanaEnough(Vector3 posKatana, Quaternion rotationKatana) {
         posDiff = Vector3.Distance(initialPosKatana, posKatana);
         rotDiff = 1 - Mathf.Abs(Quaternion.Dot(initialRotationKatana, rotationKatana));

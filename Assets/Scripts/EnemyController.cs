@@ -34,7 +34,7 @@ public class EnemyController : MonoBehaviour {
         if (Time.time >= nextTimeToFire && transform.tag == "Enemy") { //Obstacles cannot throw projectile
             fireRateRandomizer = Random.Range(0, 0.5f);
             nextTimeToFire = Time.time + fireRateRandomizer + 1f / fireRate;
-            Vector3 firingPosition = new Vector3(transform.position.x, transform.position.y+0.3f, transform.position.z-0.4f);
+            Vector3 firingPosition = new Vector3(transform.position.x+transform.rotation.x, transform.position.y+0.3f, transform.position.z-0.5f);
             GameObject projectileObj = Instantiate(projectilePrefab, firingPosition, Quaternion.identity) as GameObject;
             projectileObj.GetComponent<Rigidbody>().velocity = (transform.rotation * Vector3.forward).normalized * projectileSpeed;
         }
