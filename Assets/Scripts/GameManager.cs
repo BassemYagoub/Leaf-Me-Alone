@@ -101,6 +101,8 @@ public class GameManager : MonoBehaviour {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
 
+        string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
+
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
             playerProfile = new GameResult();
             playerProfile.playerLevel = 0;
@@ -109,14 +111,25 @@ public class GameManager : MonoBehaviour {
         }    
         else { //playing phase
             Debug.Log("adaptation");
-            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
             playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
+
+            //if player didn't play for x days => playerLvl reduced by x
+            System.DateTime lastTimePlayed = System.DateTime.Parse(playerProfile.dateOfPlay);
+            //Debug.Log((System.DateTime.Now - lastTimePlayed).Days);
+            playerProfile.playerLevel = Mathf.Max(1f, playerProfile.playerLevel-(System.DateTime.Now - lastTimePlayed).Days);
+
+            //update playerProfile
+            playerProfileJson = JsonUtility.ToJson(playerProfile);
+            //Debug.Log("PL : " + playerProfile.playerLevel);
             indexLevelDone = getCurrentLevel();
             calibrationPhase = false;
             lastGameDuration = playerProfile.gameDuration;
         }
-        playerProfile.dateOfPlay = System.DateTime.Now.Ticks;
+        playerProfile.dateOfPlay = System.DateTime.Now.ToString();
         playerController.playerProfile = playerProfile;
+
+        //rewrite data in case playerLvl was modified in previous else
+        File.WriteAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json", playerProfileJson);
 
         readGameLevel(levels[getCurrentLevel()]);
         
@@ -177,7 +190,7 @@ public class GameManager : MonoBehaviour {
 
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < nbTreesOnScreen) {
-                UpdateGameResults();
+                UpdatePlayerProfile();
                 LevelGeneration();
             }
             
@@ -191,7 +204,7 @@ public class GameManager : MonoBehaviour {
         //game ended
         else if (playerController.health <= 0 && !gamePaused) {
             GameOver();
-            UpdateGameResults();
+            UpdatePlayerProfile();
         }
 
     }
@@ -497,7 +510,7 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// save player profile in JSON file
     /// </summary>
-    void UpdateGameResults() {
+    void UpdatePlayerProfile() {
         PlayerPrefs.SetInt("player_profile", 0);
         playerProfile.gameDuration = seconds + 60 * minutes;
         playerProfile.nbEnemies = totalEnemiesGenerated;

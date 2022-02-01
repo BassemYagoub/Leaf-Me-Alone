@@ -8,7 +8,7 @@ using System.IO;
 public class GameResult
 {
     public float gameDuration;
-    public long dateOfPlay;
+    public string dateOfPlay;
     public float playerLevel;
     public float nbShurikenThrown = 1;
     public float nbShurikenAimed;
