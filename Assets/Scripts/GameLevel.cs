@@ -20,8 +20,6 @@ public class GameLevel
     public float enemyMinDamage;
     public float enemyMaxDamage;
     public int nbEnemiesMaxByTreeline;
-    public float verticalEnemiesPerc;
-    public float horizontalEnemiesPerc;
     public float enemyFireRate; //= 1f;
     //obstacles
     public int nbObstaclesMin;

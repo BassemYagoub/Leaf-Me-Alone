@@ -10,8 +10,6 @@
 	"enemyMinDamage" : 0,
 	"enemyMaxDamage" : 0,
 	"nbEnemiesMaxByTreeline" : 0,
-	"verticalEnemiesPerc" : 0,
-	"horizontalEnemiesPerc" : 0,
 	"enemyFireRate" : 1,
 	"nbObstaclesMin" : 5,
 	"nbObstaclesMax" : 10,
