@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour {
     //weights to impact playerLevel when player gets better or worse
     private float betterPerfsWeight = 3f;
     private float worsenedPerfsWeight = 1f;
+    private bool shurikenCooldownPenalized = false;
 
     // Start is called before the first frame update
     void Start() {
@@ -509,6 +510,7 @@ public class GameManager : MonoBehaviour {
         else if (shurikenAccuracy < 0.5f && enemiesPrefabDimensions < 0.75f) {
             enemiesPrefabDimensions = Mathf.Min(0.75f, 1 - shurikenAccuracy);
         }
+
     }
 
     private void UpdateEnemiesType(GameObject enemy, Collider collider) {
@@ -519,6 +521,20 @@ public class GameManager : MonoBehaviour {
     /// save player profile in JSON file
     /// </summary>
     void UpdatePlayerProfile() {
+
+        //rise shuriken cooldown if player using shuriken too much
+        float acceptanceRange = 0.5f;
+        float fireRateIncrement = 0.2f;
+        if ((playerProfile.nbShurikenThrown / playerProfile.gameDuration) > playerController.fireRate - acceptanceRange && playerController.fireRate - fireRateIncrement > 0) {
+            Debug.Log("shuriken cooldown reduced : "+ (playerProfile.nbShurikenThrown / playerProfile.gameDuration)+"< "+ (playerController.fireRate - acceptanceRange));
+            playerController.fireRate -= fireRateIncrement;
+            shurikenCooldownPenalized = true;
+        }
+        else if(playerController.fireRate < 3f){
+            playerController.fireRate += fireRateIncrement/2;
+        }
+        Debug.Log(playerController.fireRate);
+
         PlayerPrefs.SetInt("player_profile", 0);
         playerProfile.gameDuration = seconds + 60 * minutes;
         playerProfile.nbEnemies = totalEnemiesGenerated;
@@ -733,6 +749,7 @@ public class GameManager : MonoBehaviour {
             calibrationPhase = false;
             PlayerPrefs.SetInt("player_profile", 0);
             lastGameDuration = playerProfile.gameDuration;
+            shurikenCooldownPenalized = false;
         }
 
         ShowUnshowMenuPanel();
@@ -765,7 +782,8 @@ public class GameManager : MonoBehaviour {
         nbObstaclesMaxByTreeline = level.nbObstaclesMaxByTreeline;
 
         //update player controller
-        playerController.fireRate = level.playerFireRate;
+        if(!shurikenCooldownPenalized)
+            playerController.fireRate = level.playerFireRate;
         playerController.invinciblityFrame = level.invinciblityFrame; 
         playerController.regenDelay = level.regenDelay;
 
