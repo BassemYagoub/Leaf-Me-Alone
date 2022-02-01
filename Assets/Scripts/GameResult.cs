@@ -7,9 +7,9 @@ using System.IO;
 [Serializable]
 public class GameResult
 {
-    public float timePlayed;
+    public float gameDuration;
     public long dateOfPlay;
-    public int playerLevel;
+    public float playerLevel;
     public float nbShurikenThrown = 1;
     public float nbShurikenAimed;
     public int nbEnemies;
