@@ -1,11 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
-using System.IO;
 
 [Serializable]
-public class GameResult
+public class PlayerProfile
 {
     public float gameDuration;
     public string dateOfPlay;

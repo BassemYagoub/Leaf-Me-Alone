@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour {
     private float movementThreshold = 0.3f;
     public float verificationTimeStep = 1f;
 
-    public GameResult playerProfile;
+    public PlayerProfile playerProfile;
 
 
     void Start() {

@@ -15,14 +15,14 @@ public class GameManager : MonoBehaviour {
     private PlayerController playerController;
     private float depthSpeed;
     private float timeStep;
-    private float timer; 
+    private float timer;
     private int minutes;
     private int seconds;
     private bool gamePaused = false;
     private bool currentlyResumingGame = false;
     private float timeforResumingGame = 1.5f;
     public enum playerCategory { VeryBad, Bad, Average, Good, VeryGood };
-    GameResult playerProfile;
+    PlayerProfile playerProfile;
 
     [Header("Treeline platforms for all agents")]
     public GameObject treelinePrefab;
@@ -95,28 +95,31 @@ public class GameManager : MonoBehaviour {
     private int nbTreelinesBeforeNextLevel;
     private bool calibrationPhase;
     private float lastGameDuration;
+    private float lastGameShurikenAccuracy;
+    //weights to impact playerLevel when player gets better or worse
+    private float betterPerfsWeight = 3f;
+    private float worsenedPerfsWeight = 1f;
 
     // Start is called before the first frame update
     void Start() {
         Time.timeScale = 1; //if == 0 : game pauses
         playerController = player.GetComponent<PlayerController>();
 
-        string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
-
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
-            playerProfile = new GameResult();
+            playerProfile = new PlayerProfile();
             playerProfile.playerLevel = 0;
             indexLevelDone = 0;
             calibrationPhase = true;
-        }    
+        }
         else { //playing phase
             Debug.Log("adaptation");
-            playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
+            string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
+            playerProfile = JsonUtility.FromJson<PlayerProfile>(playerProfileJson);
 
             //if player didn't play for x days => playerLvl reduced by x
             System.DateTime lastTimePlayed = System.DateTime.Parse(playerProfile.dateOfPlay);
             //Debug.Log((System.DateTime.Now - lastTimePlayed).Days);
-            playerProfile.playerLevel = Mathf.Max(1f, playerProfile.playerLevel-(System.DateTime.Now - lastTimePlayed).Days);
+            playerProfile.playerLevel = Mathf.Max(1f, playerProfile.playerLevel - (System.DateTime.Now - lastTimePlayed).Days);
 
             //update playerProfile
             playerProfileJson = JsonUtility.ToJson(playerProfile);
@@ -124,27 +127,31 @@ public class GameManager : MonoBehaviour {
             indexLevelDone = getCurrentLevel();
             calibrationPhase = false;
             lastGameDuration = playerProfile.gameDuration;
+            lastGameShurikenAccuracy = playerProfile.nbShurikenAimed / playerProfile.nbShurikenThrown;
+
+            playerProfile.nbShurikenAimed = 0;
+            playerProfile.nbShurikenThrown = 1;
+
+            //rewrite data in case playerLvl was modified in previous else
+            File.WriteAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json", playerProfileJson);
         }
         playerProfile.dateOfPlay = System.DateTime.Now.ToString();
         playerController.playerProfile = playerProfile;
 
-        //rewrite data in case playerLvl was modified in previous else
-        File.WriteAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json", playerProfileJson);
-
         readGameLevel(levels[getCurrentLevel()]);
-        
+
         Debug.Log("level loaded : " + levels[getCurrentLevel()]);
 
         nbTreelinesBeforeNextLevel = treelineDensity + 2; // + 2 = nb treelines already in scene
         Debug.Log("nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
 
-        nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax+1);
+        nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax + 1);
         enemies = new List<GameObject>();
         foreach (Transform child in enemiesParent.transform) {
             enemies.Add(child.gameObject);
         }
 
-        nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax+1);
+        nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax + 1);
         obstacles = new List<GameObject>();
         foreach (Transform child in obstaclesParent.transform) {
             obstacles.Add(child.gameObject);
@@ -159,7 +166,7 @@ public class GameManager : MonoBehaviour {
         treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab, 2);
 
 
-        katanaPosVerificationTime = Time.time; 
+        katanaPosVerificationTime = Time.time;
         playerController.UpdateKatanaTraces(player.transform.InverseTransformPoint(player.transform.Find("Camera Offset/RightHand Controller").transform.position), player.transform.Find("Camera Offset/RightHand Controller").transform.rotation);
     }
 
@@ -169,7 +176,7 @@ public class GameManager : MonoBehaviour {
         if (playerController.health > 0 && !gamePaused) {
             AutomaticMoveForward(playerAutomaticMovingSpeed, distanceBetweenTreelines, treelines);
 
-            if(Time.time > katanaPosVerificationTime + playerController.verificationTimeStep) {
+            if (Time.time > katanaPosVerificationTime + playerController.verificationTimeStep) {
                 katanaMovingEnough = playerController.IsPlayerMovingKatanaEnough(player.transform.InverseTransformPoint(player.transform.Find("Camera Offset/RightHand Controller").transform.position), player.transform.Find("Camera Offset/RightHand Controller").transform.rotation);
                 katanaPosVerificationTime = Time.time;
             }
@@ -193,12 +200,12 @@ public class GameManager : MonoBehaviour {
                 UpdatePlayerProfile();
                 LevelGeneration();
             }
-            
+
             UpdateTimer();
             playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
         }
         //resume game when paused
-        else if (gamePaused && displayMenuReference.action.triggered && playerController.health > 0 && !currentlyResumingGame) { 
+        else if (gamePaused && displayMenuReference.action.triggered && playerController.health > 0 && !currentlyResumingGame) {
             ResumeGame();
         }
         //game ended
@@ -221,9 +228,9 @@ public class GameManager : MonoBehaviour {
     /// <returns></returns>
     List<GameObject> GenerateTrees(int density, float distanceBetweenTrees, GameObject parent, List<GameObject> trees, GameObject treePrefab, int spawnObjectsAfterXTreelines = 0) {
         Vector3 newPos;
-        GameObject lastAddedTree = trees[trees.Count-1];
+        GameObject lastAddedTree = trees[trees.Count - 1];
         lastAddedTree = trees[trees.Count - 1];
-        
+
         bool isTreeLine = false;
         if (parent.name.Equals("Trees"))
             isTreeLine = true;
@@ -237,9 +244,9 @@ public class GameManager : MonoBehaviour {
             lastAddedTree.name = lastAddedTree.name + " " + (i + 1);
             trees.Add(lastAddedTree);
 
-            if(isTreeLine && spawnObjectsAfterXTreelines == 0)
+            if (isTreeLine && spawnObjectsAfterXTreelines == 0)
                 GenerateEnemiesAndObstacles(lastAddedTree);
-            
+
             if (spawnObjectsAfterXTreelines > 0)
                 spawnObjectsAfterXTreelines--;
         }
@@ -250,23 +257,24 @@ public class GameManager : MonoBehaviour {
 
     void UpdateValues(int nbTreelinesTmp) {
         cptTreelinesPassed += nbTreelinesTmp - treelines.Count;
-        if (nbTreelinesTmp - treelines.Count != 0)
-            Debug.Log("nb trees = " + cptTreelinesPassed);
+        //if (nbTreelinesTmp - treelines.Count != 0)
+        //    Debug.Log("nb trees = " + cptTreelinesPassed);
 
         if (cptTreelinesPassed >= nbTreelinesBeforeNextLevel) { //level finished
             cptTreelinesPassed = nbTreelinesBeforeNextLevel - cptTreelinesPassed;
-            Debug.Log("nb trees-- = " + cptTreelinesPassed);
+            //Debug.Log("nb trees-- = " + cptTreelinesPassed);
 
             //next level if not last level
             if (indexLevelDone < levels.Count - 1) {
                 indexLevelDone++; //level finished
-                if (indexLevelDone > 2) { //add points if level finished is not a tutorial (index is not 0,1,2)
+                if (indexLevelDone > 2 && calibrationPhase) { //add points if level finished is not a tutorial (index is not 0,1,2)
                     playerProfile.playerLevel += 20;
-                    Debug.Log("+20 -> " + playerProfile.playerLevel);
+                    playerProfile.gameDuration = 1f; //reboot game duration after each part of calibration phase
+                    //Debug.Log("+20 -> " + playerProfile.playerLevel);
                 }
                 if (indexLevelDone < levels.Count - 1) //next level if it exists
                     nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone + 1);
-                Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
+                //Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
                 Debug.Log("indexLevelDone = " + levels[indexLevelDone]);
             }
         }
@@ -284,7 +292,7 @@ public class GameManager : MonoBehaviour {
         //browse all the objects that are behind the player (the list is already ordered by z ascending)
         foreach (GameObject obj in objects_list) {
             //destroy non visible trees to the player
-            if (objects_list.Count > 1 && obj.transform.position.z+offSetToDeleteObjs < player.transform.position.z) {
+            if (objects_list.Count > 1 && obj.transform.position.z + offSetToDeleteObjs < player.transform.position.z) {
                 objsToDestroy.Add(obj);
             }
             else {
@@ -312,7 +320,7 @@ public class GameManager : MonoBehaviour {
         List<GameObject> enemiesToRemove = new List<GameObject>();
 
         foreach (GameObject enemy in enemies) {
-            if(enemy == null) {
+            if (enemy == null) {
                 enemiesToRemove.Add(enemy);
                 totalEnemiesBeaten += 1;
                 //playerProfile.nbEnemiesBeaten += 1;
@@ -338,7 +346,7 @@ public class GameManager : MonoBehaviour {
         List<GameObject> obstaclesToRemove = new List<GameObject>();
 
         foreach (GameObject obstacle in obstacles) {
-            if(obstacle == null) {
+            if (obstacle == null) {
                 obstaclesToRemove.Add(obstacle);
                 totalObstaclesGenerated += 1;
                 //playerProfile.nbObstaclesBeaten += 1;
@@ -375,12 +383,12 @@ public class GameManager : MonoBehaviour {
         int nbObstacles = 0;
 
         if (nbEnemiesToGenerate != nbEnemiesGenerated)
-            nbEnemies = Random.Range(0, nbEnemiesMaxByTreeline+1);
+            nbEnemies = Random.Range(0, nbEnemiesMaxByTreeline + 1);
 
         if (nbObstaclesToGenerate != nbObstaclesGenerated)
-            nbObstacles = Random.Range(0, nbObstaclesMaxByTreeline+1);
+            nbObstacles = Random.Range(0, nbObstaclesMaxByTreeline + 1);
 
-        if(nbEnemies + nbObstacles > 3) {
+        if (nbEnemies + nbObstacles > 3) {
             nbEnemies /= 2;
             nbObstacles /= 2;
 
@@ -401,7 +409,7 @@ public class GameManager : MonoBehaviour {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            randomPositionOffset = Random.Range((-1)*enemiesSpawnRange, enemiesSpawnRange);
+            randomPositionOffset = Random.Range((-1) * enemiesSpawnRange, enemiesSpawnRange);
             newObj = Instantiate(enemyPrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), enemyPrefab.transform.rotation, enemiesParent.gameObject.transform);
             newObj.transform.localScale = new Vector3(enemiesPrefabDimensions, enemiesPrefabDimensions, enemiesPrefabDimensions);
             newObj.name = newObj.name + " " + (i + 1);
@@ -414,7 +422,7 @@ public class GameManager : MonoBehaviour {
             rand_branch = branches[Random.Range(0, branches.Count)];
             branches.Remove(rand_branch);
             slot = treeline.transform.Find(rand_branch).gameObject;
-            randomPositionOffset = Random.Range((-1)*enemiesSpawnRange, enemiesSpawnRange);
+            randomPositionOffset = Random.Range((-1) * enemiesSpawnRange, enemiesSpawnRange);
             newObj = Instantiate(obstaclePrefab, slot.transform.position + new Vector3(randomPositionOffset, 0.15f, 0), obstaclePrefab.transform.rotation, obstaclesParent.gameObject.transform);
             newObj.name = newObj.name + " " + (i + 1);
             obstacles.Add(newObj);
@@ -471,7 +479,7 @@ public class GameManager : MonoBehaviour {
         treelines = GenerateTrees(treelineDensity, distanceBetweenTreelines, treesParent, treelines, treelinePrefab);
     }
 
-    private void UpdateDifficulty() {        
+    private void UpdateDifficulty() {
         //if player does not move katana => force him to do it by making enemies looking at him
         //and increasing the spawn range of obstacles and enemies
         if (!katanaMovingEnough) {
@@ -496,7 +504,7 @@ public class GameManager : MonoBehaviour {
         float shurikenAccuracy = playerProfile.nbShurikenAimed / playerProfile.nbShurikenThrown;
 
         if (shurikenAccuracy > 0.5f && enemiesPrefabDimensions > 0.45f) {
-            enemiesPrefabDimensions = Mathf.Max(0.45f, 1-shurikenAccuracy);
+            enemiesPrefabDimensions = Mathf.Max(0.45f, 1 - shurikenAccuracy);
         }
         else if (shurikenAccuracy < 0.5f && enemiesPrefabDimensions < 0.75f) {
             enemiesPrefabDimensions = Mathf.Min(0.75f, 1 - shurikenAccuracy);
@@ -562,10 +570,10 @@ public class GameManager : MonoBehaviour {
         minutes = Mathf.FloorToInt(timer / 60);
         seconds = Mathf.RoundToInt(timer % 59);
 
-        if(seconds < 10)
-            timerText.GetComponent<TextMeshProUGUI>().text = "0"+minutes + ":0"+seconds;
+        if (seconds < 10)
+            timerText.GetComponent<TextMeshProUGUI>().text = "0" + minutes + ":0" + seconds;
         else
-            timerText.GetComponent<TextMeshProUGUI>().text = "0"+minutes + ":" + seconds;
+            timerText.GetComponent<TextMeshProUGUI>().text = "0" + minutes + ":" + seconds;
 
         canvasTimer.transform.position = new Vector3(canvasTimer.transform.position.x, canvasTimer.transform.position.y, canvasTimer.transform.position.z + playerAutomaticMovingSpeed);
     }
@@ -643,6 +651,68 @@ public class GameManager : MonoBehaviour {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    void UpdatePlayerLevelAccordingToDuration() {
+        float gameDuration = seconds + 60 * minutes;
+
+        Debug.Log("temps joué avant : " + lastGameDuration);
+        Debug.Log("temps joué après : " + gameDuration);
+
+        lastGameDuration = Mathf.Max(1, lastGameDuration); //security if player leaves game at beginning
+        float durationDifference = gameDuration - lastGameDuration;
+        float playerLevelIncrement = 0;
+        float gameDurationThreshold = 5f; //minimum duration to attain to increment PL
+
+        //player lasted longer than previous game
+        if (durationDifference >= 0f && gameDuration > gameDurationThreshold) {
+            playerLevelIncrement = Mathf.Max(1, betterPerfsWeight*(gameDuration / lastGameDuration));
+
+            if (playerProfile.playerLevel + playerLevelIncrement <= 100f) {
+                playerProfile.playerLevel += playerLevelIncrement;
+                Debug.Log("durationDiff: " + durationDifference + " PL+=" + playerLevelIncrement);
+            }
+            else {
+                playerProfile.playerLevel = 100f;
+            }
+        }
+
+        //player didn't last longer than previous game or it didn't last more than 5s
+        else if (durationDifference < 0f || gameDuration <= gameDurationThreshold) {
+            if (gameDuration <= gameDurationThreshold) { //if game lasted 5s or less => big decrement
+                playerProfile.playerLevel = Mathf.Max(1f, playerProfile.playerLevel - 5f);
+            }
+            else {
+                playerLevelIncrement = Mathf.Max(1, worsenedPerfsWeight*(lastGameDuration / gameDuration));
+
+                if (playerProfile.playerLevel - playerLevelIncrement >= 1f) {
+                    playerProfile.playerLevel -= playerLevelIncrement;
+                    Debug.Log("durationDiff: " + durationDifference + " PL-=" + playerLevelIncrement);
+                }
+                else {
+                    playerProfile.playerLevel = 1f;
+                }
+            }
+        }
+    }
+
+    void UpdatePlayerLevelAccordingToAccuracy() {
+        float shurikenAccuracy = playerProfile.nbShurikenAimed / playerProfile.nbShurikenThrown; //proba [0,1]
+
+        Debug.Log("aimed"+ playerProfile.nbShurikenAimed+" thrown"+ playerProfile.nbShurikenThrown);
+        Debug.Log("accuracy difference : "+ (shurikenAccuracy - lastGameShurikenAccuracy));
+        Debug.Log("PL += "+ 20*(shurikenAccuracy - lastGameShurikenAccuracy));
+
+        float shurikenAccuracyDifference = (shurikenAccuracy - lastGameShurikenAccuracy);
+
+        if(shurikenAccuracyDifference > 0f) {
+            playerProfile.playerLevel = Mathf.Min(100f, playerProfile.playerLevel+(20f * betterPerfsWeight * shurikenAccuracyDifference));
+        }
+        else if(shurikenAccuracyDifference < 0f) {
+            playerProfile.playerLevel = Mathf.Max(0f, (playerProfile.playerLevel+20f * worsenedPerfsWeight * shurikenAccuracyDifference));
+        }
+
+        lastGameShurikenAccuracy = shurikenAccuracy;
+    }
+
     /// <summary>
     /// Pauses game, changes menu text to Game Over and hide Resume button
     /// </summary>
@@ -654,47 +724,8 @@ public class GameManager : MonoBehaviour {
 
         //adaptation phase
         if(!calibrationPhase){
-            float gameDuration = seconds + 60 * minutes;
-
-            Debug.Log("temps joué avant : " + lastGameDuration);
-            Debug.Log("temps joué après : " + gameDuration);
-
-
-            lastGameDuration = Mathf.Max(1, lastGameDuration); //security if player leaves game at beginning
-            float durationDifference = gameDuration - lastGameDuration;
-            float playerLevelIncrement = 0;
-            float gameDurationThreshold = 5f; //minimum duration to attain to increment PL
-
-            //player lasted longer than previous game
-            if (durationDifference >= 0f && gameDuration > gameDurationThreshold) {
-                playerLevelIncrement = Mathf.Max(1, (gameDuration / lastGameDuration));
-
-                if (playerProfile.playerLevel + playerLevelIncrement <= 100f) {
-                    playerProfile.playerLevel += playerLevelIncrement;
-                    Debug.Log("durationDiff: " + durationDifference + " PL+=" + playerLevelIncrement);
-                }
-                else {
-                    playerProfile.playerLevel = 100f;
-                }
-            }
-
-            //player didn't last longer than previous game or it didn't last more than 5s
-            else if (durationDifference < 0f || gameDuration <= gameDurationThreshold) {
-                if (gameDuration <= gameDurationThreshold) { //if game lasted 5s or less => big decrement
-                    playerProfile.playerLevel = Mathf.Max(1f, playerProfile.playerLevel-5f);
-                }
-                else {
-                    playerLevelIncrement = Mathf.Max(1, (lastGameDuration / gameDuration));
-
-                    if (playerProfile.playerLevel - playerLevelIncrement >= 1f) {
-                        playerProfile.playerLevel -= playerLevelIncrement;
-                        Debug.Log("durationDiff: " + durationDifference + " PL-=" + playerLevelIncrement);
-                    }
-                    else {
-                        playerProfile.playerLevel = 1f;
-                    }
-                }
-            }
+            UpdatePlayerLevelAccordingToDuration();
+            UpdatePlayerLevelAccordingToAccuracy();
         }
 
         //pass from calibration to playing phase
