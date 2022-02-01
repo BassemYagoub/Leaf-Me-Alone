@@ -104,14 +104,14 @@ public class GameManager : MonoBehaviour {
         if (PlayerPrefs.GetInt("player_profile") == -1) { //calibration phase
             playerProfile = new GameResult();
             playerProfile.playerLevel = 0;
-            indexLevelDone = -1;
+            indexLevelDone = 0;
             calibrationPhase = true;
         }    
         else { //playing phase
             Debug.Log("adaptation");
             string playerProfileJson = File.ReadAllText(Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Results" + Path.DirectorySeparatorChar + "player_profile" + PlayerPrefs.GetInt("player_profile") + ".json");
             playerProfile = JsonUtility.FromJson<GameResult>(playerProfileJson);
-            indexLevelDone = getCurrentLevel() - 1;
+            indexLevelDone = getCurrentLevel();
             calibrationPhase = false;
             lastTimePlayed = playerProfile.timePlayed;
         }
@@ -119,12 +119,6 @@ public class GameManager : MonoBehaviour {
         playerController.playerProfile = playerProfile;
 
         readGameLevel(levels[getCurrentLevel()]);
-
-        //// load last level & mark level as level not done (points removed)
-        //if(playerProfile.playerLevel > 20) {
-        //    indexLevelDone -= 1;
-        //    playerProfile.playerLevel -= 20;
-        //}
         
         Debug.Log("level loaded : " + levels[getCurrentLevel()]);
 
@@ -174,39 +168,19 @@ public class GameManager : MonoBehaviour {
                 PauseGame();
             }
 
+            int tmp = treelines.Count;
+            treelines = DestroyFromList(treelines);
+            DestroyEnemiesAndObstacles();
+
+            //count nb treelines passed
+            UpdateValues(tmp);
+
             //Generate or destroy treeline platforms & enemies/obstacles
             if (treelines.Count < nbTreesOnScreen) {
                 UpdateGameResults();
                 LevelGeneration();
             }
             
-            int tmp = treelines.Count;
-            treelines = DestroyFromList(treelines);
-            DestroyEnemiesAndObstacles();
-
-            //count nb treelines passed
-            cptTreelinesPassed += tmp - treelines.Count;
-            if(tmp - treelines.Count != 0)
-                Debug.Log("nb trees = " + cptTreelinesPassed);
-            if(cptTreelinesPassed >= nbTreelinesBeforeNextLevel) { //level finished
-                cptTreelinesPassed = nbTreelinesBeforeNextLevel - cptTreelinesPassed;
-                Debug.Log("nb trees-- = " + cptTreelinesPassed);
-                //next level if not last level
-                if(indexLevelDone < levels.Count - 1) {
-                    indexLevelDone++; //level finished
-                    if(indexLevelDone > 2) { //add points if level finished is not a tutorial (index is not 0,1,2)
-                        playerProfile.playerLevel += 20;
-                        Debug.Log("+20 -> " + playerProfile.playerLevel);
-                    }
-                    if (indexLevelDone < levels.Count - 1) //next level if it exists
-                        nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone+1); 
-                    Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
-                    Debug.Log("indexLevelDone = " + levels[indexLevelDone]);
-                }
-            }
-            
-            
-
             UpdateTimer();
             playerAutomaticMovingSpeed += 0.000005f; //make the game harder with time
         }
@@ -258,6 +232,31 @@ public class GameManager : MonoBehaviour {
         }
         return trees;
 
+    }
+
+
+    void UpdateValues(int nbTreelinesTmp) {
+        cptTreelinesPassed += nbTreelinesTmp - treelines.Count;
+        if (nbTreelinesTmp - treelines.Count != 0)
+            Debug.Log("nb trees = " + cptTreelinesPassed);
+
+        if (cptTreelinesPassed >= nbTreelinesBeforeNextLevel) { //level finished
+            cptTreelinesPassed = nbTreelinesBeforeNextLevel - cptTreelinesPassed;
+            Debug.Log("nb trees-- = " + cptTreelinesPassed);
+
+            //next level if not last level
+            if (indexLevelDone < levels.Count - 1) {
+                indexLevelDone++; //level finished
+                if (indexLevelDone > 2) { //add points if level finished is not a tutorial (index is not 0,1,2)
+                    playerProfile.playerLevel += 20;
+                    Debug.Log("+20 -> " + playerProfile.playerLevel);
+                }
+                if (indexLevelDone < levels.Count - 1) //next level if it exists
+                    nbTreelinesBeforeNextLevel = getNbTreelinesBeforeNextLevel(indexLevelDone + 1);
+                Debug.Log("new nbTreelinesBeforeNextLevel = " + nbTreelinesBeforeNextLevel);
+                Debug.Log("indexLevelDone = " + levels[indexLevelDone]);
+            }
+        }
     }
 
     /// <summary>
@@ -420,16 +419,16 @@ public class GameManager : MonoBehaviour {
                 return 0; //tutorial
             case int n when (0 < n && n < 20):
                 return 3; //very easy, levels[3] 
-            case int n when (20 < n && n < 40):
+            case int n when (20 <= n && n < 40):
                 return 4; //easy
-            case int n when (40 < n && n < 60):
+            case int n when (40 <= n && n < 60):
                 return 5; //medium
-            case int n when (60 < n && n < 80):
+            case int n when (60 <= n && n < 80):
                 return 6; //hard
-            case int n when (80 < n && n < 100):
+            case int n when (80 <= n && n <= 100):
                 return 7; //very hard
             default:
-                return 7; //max level
+                return 0; //tutorial
         }
 
     }
@@ -443,7 +442,12 @@ public class GameManager : MonoBehaviour {
         //Debug.Log("playerLevel " + playerProfile.playerLevel);
         //Debug.Log("lvl " + getCurrentLevel());
 
-        readGameLevel(levels[getCurrentLevel()]);
+        if (calibrationPhase) {
+            readGameLevel(levels[indexLevelDone]);
+        }
+        else {
+            readGameLevel(levels[getCurrentLevel()]);
+        }
         //update values to generate
         nbObstaclesToGenerate = Random.Range(nbObstaclesMin, nbObstaclesMax + 1);
         nbEnemiesToGenerate = Random.Range(nbEnemiesMin, nbEnemiesMax + 1);
@@ -638,31 +642,29 @@ public class GameManager : MonoBehaviour {
         menuPanel.transform.GetChild(1).gameObject.SetActive(true); //show feedback
         menuPanel.transform.GetChild(2).gameObject.SetActive(false); //hide resume button
 
-        //calibration phase
-        //if (calibrationPhase) {
-            //return to previous level done
-            //if(playerProfile.playerLevel > 20)
-            //    playerProfile.playerLevel -= 20;
-        //}
-
         //adaptation phase
         if(!calibrationPhase){
-
             int timePlayed = seconds + 60 * minutes;
 
             Debug.Log("temps joué avant : " + lastTimePlayed);
             Debug.Log("temps joué après : " + timePlayed);
 
-            //player lasted longer
-            if((timePlayed - lastTimePlayed) >= 0) {
-                playerProfile.playerLevel -= 1;
+            //player lasted longer (or 4s less)
+            if((timePlayed - lastTimePlayed) >= -4f && playerProfile.playerLevel < 100) {
+                playerProfile.playerLevel += 1;
             }
 
             //player didn't last longer
-            else {
-                playerProfile.playerLevel -= 2;
+            else if((timePlayed - lastTimePlayed) < -4f && playerProfile.playerLevel > 0) {
+                playerProfile.playerLevel -= 1;
             }
+        }
 
+        //pass from calibration to playing phase
+        if (calibrationPhase) { 
+            calibrationPhase = false;
+            PlayerPrefs.SetInt("player_profile", 0);
+            lastTimePlayed = playerProfile.timePlayed;
         }
 
         ShowUnshowMenuPanel();
@@ -687,8 +689,6 @@ public class GameManager : MonoBehaviour {
         enemyMinDamage = level.enemyMinDamage;
         enemyMaxDamage = level.enemyMaxDamage;
         nbEnemiesMaxByTreeline = level.nbEnemiesMaxByTreeline;
-        verticalEnemiesPerc = level.verticalEnemiesPerc;
-        horizontalEnemiesPerc = level.horizontalEnemiesPerc;
         //obstacles
         nbObstaclesMin = level.nbObstaclesMin;
         nbObstaclesMax = level.nbObstaclesMax;
