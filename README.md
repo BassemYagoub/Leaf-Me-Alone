@@ -9,6 +9,8 @@ https://www.youtube.com/watch?v=MONGije0lcY
 
 The purpose of the game is to adapt itself to the player. It has three different phases : tutorial phase, calibration phase and adaptation phase. The passage between the phases is not visible to the player. When you create a new game, a new user profile will be created and you start with the tutorial phase. If you choose to continue a game, the user profile (which is a JSON file) will be loaded and the game will start according to your level in the adaptation phase. The tutorial parts and calibration levels are defined in several JSON files.
 
+You can find a build for Windows x64 if you want to play the game in the Build repository.
+
 ## Tutorial phase
 In this phase, the player learns how to play the game gradually.
 The tutorial phase is composed of three parts :
